@@ -6,6 +6,7 @@ html, body {
   border: none;
   overflow: hidden;
   font-size: 10px;
+  background-color: #8abbd7;
 }
 
 * {
@@ -13,9 +14,9 @@ html, body {
 }
 
 section,footer,nav,a,img {
-          margin:  0;
-          padding: 0;
-          border:none;
+  margin:  0;
+  padding: 0;
+  border:none;
 }
 
 #content {
@@ -32,13 +33,9 @@ section,footer,nav,a,img {
   left: 0;        
 }
 
-#strip {
-  background: -moz-linear-gradient(left, #066dab 0%, #8abbd7 69%, #c5deea 100%);       
-}
-
 #icongrid {
   -moz-transform: translateX(100%);
-  background: -moz-linear-gradient(left, #c5deea 0%, #8abbd7 31%, #066dab 100%);
+  background-color: #8abbd7;
   z-index: 1;
 }
 

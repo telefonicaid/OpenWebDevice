@@ -52,7 +52,7 @@ if (!owd.Icon) {
         var style = img.style;
         var w = img.width;
         style.height  = w + 'px';
-        style.borderRadius = w/2 + 'px';
+        //style.borderRadius = w/2 + 'px';
       }
 
       // Label

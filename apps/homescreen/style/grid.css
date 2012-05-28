@@ -73,14 +73,13 @@
     z-index: 2;
     background: url(../resources/images/menu.png) no-repeat center top;
     pointer-events: none;
-    
-    display: none; /* Temporal */
   }
 
   /* icon */
   .apps img {
     max-width: 100%;
     width: 75%;
+    border-radius: 50%; /* Circle */
   }
 
   /* label */
@@ -92,7 +91,7 @@
     text-shadow: 0 0 4px #000000;
     width: 100%;
     text-overflow: clip;
-    display: inline-block;
+    display: block;
   }
 
   .apps .draggable {
@@ -105,7 +104,7 @@
   }
 
   .apps .draggable img {
-    -moz-transform: scale(1.2);
+    -moz-transform: scale(1.1);
     padding-bottom: 12%;
   }
 
@@ -127,6 +126,7 @@
     100% { -moz-transform: translate(1px, -2px) rotate(-1deg); }
   }
   
+  /*
   .apps[data-mode = 'edit'] ol > li div.figure {
     -moz-animation-name: spaceboots;
     -moz-animation-duration: 2.4s;
@@ -134,7 +134,7 @@
     -moz-animation-iteration-count: infinite;
     -moz-animation-timing-function: linear;
     opacity: .8;
-  }
+  }*/
   
   .apps[data-mode = 'normal'] ol > li span.options {
     display: none;
