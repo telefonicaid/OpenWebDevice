@@ -1,0 +1,145 @@
+.main {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+}
+
+.dots {
+  width: 100%;
+  height: 5%;
+  text-align: center;
+}
+
+  .dots img {
+    display: inline-block;
+    border: 0;
+    margin: 0 .5%;
+    vertical-align: middle;
+  }
+
+.apps {
+  width: 100%;
+  height: 95%;
+  overflow: hidden;
+}
+
+  /* pages */
+  .apps > div {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  .apps ol {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+  }
+
+  .apps ol > li {
+    position: relative;
+    width: 25%;
+    display: inline-block;
+    float: left;
+    text-align: center;
+    padding-bottom: 2%;
+  }
+
+  /* Maximum 16 icons for page */
+  .apps ol > li:nth-child(17) {
+    display: none;
+  }
+
+  .apps ol > li div {
+    height: 100%;
+    width: 100%;
+  }
+
+  .apps ol > li div.icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  .apps ol > li span.options {
+    position: relative;
+    top: -10%;
+    left: 0;
+    width: 100%;
+    height: 33%;
+    z-index: 2;
+    background: url(../resources/images/menu.png) no-repeat center top;
+    pointer-events: none;
+    
+    display: none; /* Temporal */
+  }
+
+  /* icon */
+  .apps img {
+    max-width: 100%;
+    width: 75%;
+  }
+
+  /* label */
+  .apps span {
+    text-transform: capitalize;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 4px #000000;
+    width: 100%;
+    text-overflow: clip;
+    display: inline-block;
+  }
+
+  .apps .draggable {
+    z-index: 10000;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    width: 25%;
+    -moz-transform: translate(0,0);
+  }
+
+  .apps .draggable img {
+    -moz-transform: scale(1.2);
+    padding-bottom: 12%;
+  }
+
+  .apps .draggable span {
+    font-size: 2rem;
+  }
+  
+  @-moz-keyframes spaceboots {
+    0% { -moz-transform: translate(2px, 1px) rotate(0deg); }
+    10% { -moz-transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { -moz-transform: translate(-3px, 0px) rotate(1deg); }
+    30% { -moz-transform: translate(0px, 2px) rotate(0deg); }
+    40% { -moz-transform: translate(1px, -1px) rotate(1deg); }
+    50% { -moz-transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { -moz-transform: translate(-3px, 1px) rotate(0deg); }
+    70% { -moz-transform: translate(2px, 1px) rotate(-1deg); }
+    80% { -moz-transform: translate(-1px, -1px) rotate(1deg); }
+    90% { -moz-transform: translate(2px, 2px) rotate(0deg); }
+    100% { -moz-transform: translate(1px, -2px) rotate(-1deg); }
+  }
+  
+  .apps[data-mode = 'edit'] ol > li div.figure {
+    -moz-animation-name: spaceboots;
+    -moz-animation-duration: 2.4s;
+    -moz-transform-origin:50% 50%;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: linear;
+    opacity: .8;
+  }
+  
+  .apps[data-mode = 'normal'] ol > li span.options {
+    display: none;
+  }
+  
+  .apps ol > li[data-dragging] {
+    opacity: 0;
+  }

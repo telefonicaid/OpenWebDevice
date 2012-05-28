@@ -1,0 +1,82 @@
+<!--
+
+ *
+ *  Module: Strip.
+ *
+ *  Product: Open Web Device
+ *
+ *  Copyright(c) 2012 Telefónica I+D S.A.U.
+ *
+ *  LICENSE: Apache 2.0
+ *
+ *  @author José M. Cantera (jmcf@tid.es)
+ *
+ *
+ *
+
+-->
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,
+                                user-scalable=no,initial-scale=1.0">
+    <link rel="stylesheet" href="style/request.css">
+    <link rel="stylesheet" href="style/contextualmenu.css">
+    <link rel="stylesheet" href="style/homescreen.css">
+    <link rel="stylesheet" href="style/strip.css">
+    <link rel="stylesheet" href="style/grid.css">
+
+      <style>
+      </style>
+
+  </head>
+
+  <body data-state='strip'>
+    <section id="content">
+
+      <section id="strip" class="view">
+        <section id="previews" style="margin:0; padding:0; width:100%;height:72%">
+        </section>
+
+        <footer style="width:100%;">
+          <nav>
+            <ol>
+              <li><a href="http://dialer.gaiamobile.org"><img src="resources/images/icon1.png"></img></a></li>
+              <li><a href="http://camera.gaiamobile.org"><img src="resources/images/icon2.png"></a></li>
+              <li><a href="http://calculator.gaiamobile.org"><img src="resources/images/icon3.png"></a></li>
+              <li><a href="http://facebook.gaiamobile.org"><img src="resources/images/icon4.png"><span class="notification">2</span></a></li>
+              <li><a href="http://clock.gaiamobile.org"><img src="resources/images/icon5.png"></a></li>
+              <li><a href="http://settings.gaiamobile.org"><img src="resources/images/icon6.png"></a></li>
+              <li><a href="http://gallery.gaiamobile.org"><img src="resources/images/icon7.png"></a></li>
+              <li><a href="http://browser.gaiamobile.org"><img src="resources/images/icon8.png"></a></li>
+              <li><a href="http://sms.gaiamobile.org"><img src="resources/images/icon9.png"><span class="notification">3</span></a></li>
+            </ol>
+          </nav>
+        </footer>
+      </section> <!-- strip -->
+
+      <section id="icongrid" class="view">
+        <div class="dots"></div>
+        <div class="apps" data-mode="normal"></div>
+      </section>  <!-- icongrid -->
+
+    </section> <!-- content -->
+
+    <footer id="footer">
+      <img src="resources/images/footer.png" style="width: 100%; height: 100%">
+    </footer>
+
+    <script src="js/transformations.js"></script>
+    <script src="js/appmanager.js"></script>
+    <script src="js/request.js"></script>
+    <script src="js/contextualmenu.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/strip.js"></script>
+    <script src="js/page.js"></script>
+    <script src="js/grid.js"></script>
+    <script src="js/homescreen.js"></script>
+
+  </body>
+</html>
