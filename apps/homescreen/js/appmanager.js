@@ -149,7 +149,7 @@ if(typeof owdAppManager === 'undefined') {
         // XXX it looks like the homescreen can't load images from other origins
         // so use the ones from the url host for now
         // icon = app.origin + icon;
-        ret = 'http://' + document.location.host + icon;
+        ret = 'http://' + document.location.host + ret;
       }
       
       manifest.targetIcon = ret;
