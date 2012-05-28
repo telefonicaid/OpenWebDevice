@@ -1,0 +1,306 @@
+<!--
+App ID:	260304060715688
+App Secret:	dd3acf5913c0cf0519b7c4ce26628bad
+Facebook application proof of concept
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <meta http-equiv="pragma" content="no-cache">
+        <title>FB</title>
+
+        <script>
+            function userDataReady(userData) {
+                window.console.log('UserData:',userData);
+                var ele = document.querySelector("p strong");
+                ele.textContent = userData.name;
+
+                ele = document.querySelector('img');
+
+                ele.src = 'https://graph.facebook.com/me/picture' + '?' +
+                'access_token=' + accessToken;
+            }
+
+            function friendsReady(friendsData) {
+                window.console.log('Friends:',friendsData);
+
+                var myFriends = friendsData.data;
+                var number = myFriends.length;
+
+                var list = document.querySelector('ul');
+                for(var c = 0; c < number; c++) {
+                    list.innerHTML += ('<li>' + '<img src="' +
+                                       'https://graph.facebook.com/' +
+                                        + myFriends[c].id +
+                                       '/picture"' +
+                                       '?access_token=' + accessToken +
+                                        '>' +
+                                       '<a href="#" onclick="getFoF()">'
+                                        + myFriends[c].name + '</a>');
+                }
+            }
+
+            function newsReady(newsData) {
+              var myNews = newsData.data;
+              var number = myNews.length;
+
+              var list = document.querySelector('ol');
+
+              for(var c = 0; c < number; c++) {
+                var msg = myNews[c].story;
+                if(!msg || msg.length === 0) {
+                  msg = myNews[c].message;
+                }
+
+                if(msg && msg.length > 0) {
+                list.innerHTML +=  ('<li style="width: 100%; margin: 4px:0; float:left"><dl><dt><img style="float:left" src="' +
+                                    'https://graph.facebook.com/' +
+                                        + myNews[c].from.id + '/picture' +
+                                        '?access_token=' + accessToken +
+                                    '"><b>' +  myNews[c].from.name + '</b></dt>' +
+              '<dd>' + msg + '</dd></dl></li>'); }
+              }
+
+              if(document.location.toString().indexOf('preview=1') !== -1) {
+                document.body.dataset.state = 'preview';
+              }
+            }
+
+            function fofReady(friendsData) {
+
+            }
+
+            function getFriends() {
+                var friendsService = 'https://graph.facebook.com/me/friends?';
+
+                params = ['access_token=' + accessToken,
+                                      'callback=friendsReady'];
+
+                q = params.join('&');
+
+                jsonp = document.createElement('script');
+                jsonp.src = friendsService + q;
+                document.body.appendChild(jsonp);
+            }
+
+            function getNews() {
+              var newsService = 'https://graph.facebook.com/me/home?';
+
+              var now = Date.now();
+              var since = now - 2 * 60 * 60 * 1000;
+
+              var params = ['access_token=' + accessToken,
+                                      'callback=newsReady','limit=6'];
+
+              var q = params.join('&');
+
+              var jsonp = document.createElement('script');
+              jsonp.src = newsService + q;
+              document.body.appendChild(jsonp);
+            }
+
+            function logout() {
+              window.console.log('Logout');
+
+              document.location =
+              'https://m.facebook.com/logout.php?next=' +
+                  encodeURIComponent(window.location + "?logout=1") + '&access_token='
+                  + accessToken;
+
+              window.localStorage.removeItem('access_token');
+            }
+        </script>
+
+        <style>
+        html,body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+}
+
+          ul,ol {
+            list-style: none;
+            padding:0;
+            border: none;
+            margin:0;
+            width:100%;
+          }
+
+          li {
+            margin-bottom: 2px;
+          }
+
+          dt,dd {
+            margin:0;
+            padding:0;
+          }
+
+          body[data-state='preview'] div#ident {
+            display: none;
+          }
+
+          body[data-state='preview'] div#options {
+            display: none;
+          }
+
+          body[data-state='waiting'] div#wait {
+            display: block;
+          }
+
+          div#logout {
+            display: none;
+          }
+
+          div#wait {
+            display: none;
+          }
+
+          body[data-state='logout'] div#logout {
+            display:block;
+          }
+
+          body[data-state='logout'] section#content {
+            display:none;
+          }
+
+
+          body[data-state='waiting'] section#content {
+            display:none;
+          }
+        </style>
+    </head>
+
+    <body data-state='default'>
+      <section id="content" style="margin:0;padding:0;width:100%">
+
+      <div id="ident">
+        <img style="float:left;margin-right:1em" alt="Photo">
+        <p style="float:left"><strong>Loading ...</strong></p>
+      </div>
+
+      <div id="options" style="clear:left">
+        <button type=button onclick="getFriends()">Get Friends</button>
+        <button type=button onclick="getNews()">Get News</button>
+        <button type=button onclick="logout()">Logout</button>
+      </div>
+
+        <ul style="float:left">
+        </ul>
+
+        <ol style="float:left" desc id="news">
+        </ol>
+
+      </section>
+
+      <div id="wait" style="bottom:50%;position:absolute;left:50%">
+          <img src="throbber.gif">
+      </div>
+
+      <div id="logout">
+        <p>Logged Out!</p>
+        <a href="http://facebook.gaiamobile.org/fb.html">Log in</a>
+      </div>
+
+        <script>
+         var oauth = 'https://m.facebook.com/dialog/oauth?';
+         var accessToken;
+
+            var appID = '260304060715688';
+            var hash = window.location.hash;
+            var ACC_T = 'access_token';
+
+
+        window.addEventListener('load',function()  {
+
+            window.console.log("The hash is: ", hash);
+            window.console.log('document.location.search: ',document.location);
+
+            if(document.location.toString().indexOf('logout=1') !== -1) {
+              document.body.dataset.state  = 'logout';
+            }
+            else {
+
+              accessToken = getAccessToken();
+
+              if(accessToken) {
+                  if(document.location.toString().indexOf('preview=1') !== -1) {
+                          window.console.log('Loading News');
+                          document.body.dataset.state = 'waiting';
+                          getNews();
+                  } else {
+
+                        window.console.log('Getting user info');
+
+                        var userDataService = 'https://graph.facebook.com/me?';
+                        var params = ['access_token=' + accessToken,
+                                      'callback=userDataReady'];
+
+                        var q = params.join('&');
+
+                        var jsonp = document.createElement('script');
+                        jsonp.src = userDataService + q;
+                        document.body.appendChild(jsonp);
+                    }
+                }
+          }
+
+        });
+        </script>
+
+        <script>
+          function getAccessToken() {
+            var ret;
+
+            if(typeof window.localStorage.access_token === 'undefined') {
+
+              window.console.log('No access token stored!!!');
+
+              var hash = window.location.hash;
+
+              if(hash.length > 0) {
+                if(hash.indexOf(ACC_T) === 1) {
+                  var end = hash.length;
+                  var expires = hash.indexOf('&');
+                  if(expires !== -1) {
+                      end = expires;
+                  }
+
+                  ret = hash.substring(ACC_T.length + 2,end);
+
+                  window.localStorage.access_token = ret;
+
+                  window.console.log('Access Token:',ret);
+                }
+              } else {
+                startOAuth();
+              }
+            }
+            else {
+              window.console.log('Reusing existing access token');
+              ret = window.localStorage.access_token;
+            }
+
+            return ret;
+          }
+
+          function startOAuth() {
+            var queryParams = ['client_id=' + appID,
+                                      'redirect_uri='
+                                          + encodeURIComponent(window.location),
+                                      'response_type=token',
+                                      'scope=' + encodeURIComponent('read_stream')];
+            var query = queryParams.join('&');
+            var url = oauth + query;
+
+            window.console.log('URL: ', url);
+
+            document.location = url;
+          }
+        </script>
+    </body>
+</html>
