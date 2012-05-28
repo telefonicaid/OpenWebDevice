@@ -25,10 +25,7 @@ if(typeof owdAppManager === 'undefined') {
   
   var nonInstalledApps = ['http://system.gaiamobile.org',
                           'http://homescreen.gaiamobile.org',
-                          'http://homescreentef.gaiamobile.org',
-                          'http://system.gaiamobile.org:8080',
-                          'http://homescreen.gaiamobile.org:8080',
-                          'http://homescreentef.gaiamobile.org:8080'];
+                          'http://homescreentef.gaiamobile.org'];
 
   navigator.mozApps.mgmt.getAll().onsuccess = function(e) {
       var apps = e.target.result;
@@ -152,7 +149,7 @@ if(typeof owdAppManager === 'undefined') {
         // XXX it looks like the homescreen can't load images from other origins
         // so use the ones from the url host for now
         // icon = app.origin + icon;
-        ret = origin + ret;
+        ret = 'http://' + document.location.host + icon;
       }
       
       manifest.targetIcon = ret;
