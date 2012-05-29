@@ -1,26 +1,37 @@
-
+/*
+ *  Module: Contextual menu
+ *
+ *  Product: Open Web Device
+ *
+ *  Copyright(c) 2012 Telef—nica I+D S.A.U.
+ *
+ *  LICENSE: Apache 2.0
+ *
+ *  @author Cristian Rodriguez
+ *
+ */
 var contextualMenu = (function(doc) {
   'use strict';
-  
+
   var screen = null;
-  
+
   function onClick(evt, callback) {
     callback(evt.target.id);
   }
-  
-  // Listening for back event for hidding the contextual menu 
+
+  // Listening for back event for hidding the contextual menu
   window.addEventListener('keyup', function(e) {
     // We have to listen for HOME or BACK event
     if (e.keyCode === e.DOM_VK_ESCAPE || e.keyCode === e.DOM_VK_HOME) {
       contextualMenu.hide();
     }
   }, true);
-  
+
   return {
     show: function(data, callback) {
       screen = doc.createElement('section');
       screen.id = 'menu-screen';
-      
+
       // Prevent scroll
       screen.addEventListener('touchmove', function(e) {
         e.preventDefault();
@@ -49,7 +60,7 @@ var contextualMenu = (function(doc) {
         });
         dialog.appendChild(button);
       }
-      
+
       // Clicking on screen we hide the contextual menu
       screen.addEventListener('click', function click(evt) {
         screen.removeEventListener('click', click);
@@ -58,15 +69,13 @@ var contextualMenu = (function(doc) {
 
       doc.body.appendChild(screen);
     },
-    
+
     hide: function() {
       if (screen !== null) {
         doc.body.removeChild(screen);
         screen = null;
-      }  
+      }
     }
   }
-  
-}(document)); 
 
-
+}(document));

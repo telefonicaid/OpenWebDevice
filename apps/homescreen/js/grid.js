@@ -1,3 +1,15 @@
+/*
+ *  Module: Grid module
+ *
+ *  Product: Open Web Device
+ *
+ *  Copyright(c) 2012 Telef—nica I+D S.A.U.
+ *
+ *  LICENSE: Apache 2.0
+ *
+ *  @author Cristian Rodriguez
+ *
+ */
 var owd = window.owd || {};
 
 if (!owd.GridManager) {
@@ -90,13 +102,13 @@ if (!owd.GridManager) {
     function keepPosition() {
       if (status.iCoords.x !== status.cCoords.x) {
         var currentPage = pages.current;
-  
+
         pageHelper.getCurrent().moveToCenter();
-  
+
         if (currentPage > 0) {
           pageHelper.getPrevious().moveToLeft();
         }
-  
+
         if (currentPage < pages.total - 1) {
           pageHelper.getNext().moveToRight();
         }
@@ -144,7 +156,7 @@ if (!owd.GridManager) {
       window.addEventListener(moveEvent, owd.GridManager);
       window.addEventListener(endEvent, owd.GridManager);
     }
-    
+
     /*
      * Implements the observer for detecting tap and hold in the grid
      *
@@ -159,7 +171,7 @@ if (!owd.GridManager) {
         }
       }, tapHoldTimeout);
     }
-    
+
     /*
      * Removes the tap and hold observer
      */
@@ -194,7 +206,7 @@ if (!owd.GridManager) {
         }
       }
     }
-    
+
     /*
      * Homescreen will dispatch the gesture
      *
@@ -205,12 +217,12 @@ if (!owd.GridManager) {
       ev.pageX = status.cCoords.x;
       container.parentNode.dispatchEvent(ev);
     }
-    
+
     /*
      * Clicks on icons fires touchmove events for poor devices
      */
     var thresholdForTapping = 10;
-    
+
     /*
      * Returns true if it's the first page and swipe from left to
      * right and not edit mode
@@ -221,7 +233,7 @@ if (!owd.GridManager) {
       return (!owd.GridManager.isEditMode() &&
               pages.current === 0 && difX > thresholdForTapping);
     }
-    
+
     /*
      * Returns true if it's a tap event
      *
@@ -238,7 +250,7 @@ if (!owd.GridManager) {
      */
     function onEndEvent(evt) {
       if (!canceledTapHoldObserver) {
-        removeTapHoldObserver(); 
+        removeTapHoldObserver();
       }
       evt.stopPropagation();
       window.removeEventListener(moveEvent, owd.GridManager);
@@ -278,7 +290,7 @@ if (!owd.GridManager) {
     function renderFromMozApps() {
       var max = pageHelper.getMaxPerPage();
       var list = [];
-      
+
       var apps = owdAppManager.getAll();
       for(var origin in apps) {
         list.push(apps[origin]);
@@ -287,11 +299,11 @@ if (!owd.GridManager) {
           list = [];
         }
       }
-      
+
       if (list.length > 0) {
         pageHelper.push(list, true);
       }
-      
+
       // Renders pagination dots
       Dots.render();
 
@@ -515,17 +527,17 @@ if (!owd.GridManager) {
        * It's true when an user is dragging
        */
       dragging: false,
-      
+
       /*
        * Returns true when the drop feature is disabled
        */
       isDropDisabled: false,
-      
+
       /*
        * Returns true when the current page is changing
        */
       isTranslatingPages: false,
-      
+
       /*
        * Sets the isTranslatingPages variable
        *
@@ -574,7 +586,7 @@ if (!owd.GridManager) {
             goPrev();
             this.setTranslatingPages(true);
           }
-        }   
+        }
       },
 
       /*
@@ -668,7 +680,7 @@ if (!owd.GridManager) {
         for (var i = 0; i < total; i++) {
           this.createDot(i === current);
         }
-        
+
       },
 
       /*
@@ -775,7 +787,7 @@ if (!owd.GridManager) {
         var index = 0;
         var total = pages.total;
         var origin = app.origin.toString();
-        
+
         while(index < total) {
           var page = pages.list[index];
           if (page.getIcon(origin)) {
@@ -784,7 +796,7 @@ if (!owd.GridManager) {
           }
           index++
         }
-        
+
         checkEmptyPages();
         pageHelper.saveAll();
       },
@@ -801,7 +813,7 @@ if (!owd.GridManager) {
         }
         container.dataset.mode = wmode = mode;
       },
-      
+
       /*
        * Returns true if we are in edit mode
        */

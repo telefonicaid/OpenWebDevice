@@ -1,3 +1,15 @@
+/*
+ *  Module: State
+ *
+ *  Product: Open Web Device
+ *
+ *  Copyright(c) 2012 Telef—nica I+D S.A.U.
+ *
+ *  LICENSE: Apache 2.0
+ *
+ *  @author Cristian Rodriguez
+ *
+ */
 var owd = window.owd || {};
 
 if(!owd.HomeState) {
@@ -12,7 +24,7 @@ if(!owd.HomeState) {
     var database = null;
 
     function openDB (success, error) {
-      
+
       if (window.mozIndexedDB) {
         console.log("IndexedDB is here");
 
@@ -43,9 +55,9 @@ if(!owd.HomeState) {
         console.log("Indexed DB is not available. It is time you update your browser!!!");
         error();
       }
-      
+
     }
-    
+
 
     function newTxn(txn_type, callback, successCb, failureCb) {
       var txn = database.transaction([STORE_NAME], txn_type);

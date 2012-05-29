@@ -1,3 +1,16 @@
+/*
+ *  Module: Page and Icon modules
+ *
+ *  Product: Open Web Device
+ *
+ *  Copyright(c) 2012 Telef—nica I+D S.A.U.
+ *
+ *  LICENSE: Apache 2.0
+ *
+ *  @author Cristian Rodriguez
+ *
+ */
+
 'use strict';
 var owd = window.owd || {};
 
@@ -10,19 +23,19 @@ if (!owd.Icon) {
   */
   owd.Icon = function(app) {
     var origin = owdAppManager.getOrigin(app);
-  
+
     this.descriptor = {
       origin: origin,
       name: owdAppManager.getName(origin),
       icon: owdAppManager.getIcon(origin)
     };
-  
+
     this.type = 'owd.Icon';
   }
 
   owd.Icon.prototype = {
-    
-    
+
+
    /*
     * Renders the icon into the page
     *
@@ -43,12 +56,12 @@ if (!owd.Icon) {
        * </li>
        */
       this.dragabbleSection = container.parentNode;
-      
+
       var listItem = this.listItem = document.createElement('li');
 
       var name = this.descriptor.name;
       var origin = this.descriptor.origin;
-      
+
       // Icon container
       var figure = this.figure = document.createElement('div');
       figure.className = 'figure';
@@ -57,7 +70,7 @@ if (!owd.Icon) {
       var img = document.createElement('img');
       img.src = this.descriptor.icon;
       figure.appendChild(img);
-      
+
       img.onerror = function() {
         img.src  = 'http://' + document.location.host + '/resources/images/Unknown.png';
       }
@@ -79,19 +92,19 @@ if (!owd.Icon) {
       var options = document.createElement('span');
       options.className = 'options';
       shader.appendChild(options);
-      
+
       listItem.dataset.origin = origin;
-      
+
       target.appendChild(listItem);
     },
-    
+
    /*
     * Returns the list item that contains to itself
     */
     getListItem: function() {
       return this.listItem;
     },
-    
+
    /*
     * This method is invoked when the drag gesture starts
     *
@@ -102,21 +115,21 @@ if (!owd.Icon) {
     onDragStart: function(x, y) {
       this.initX = x;
       this.initY = y;
-      
+
       var draggableElem = this.draggableElem = this.figure.cloneNode();
       draggableElem.className = 'draggable';
 
       var li = this.listItem;
       li.dataset.dragging = 'true';
-      
+
       var rectangle = li.getBoundingClientRect();
       var style = draggableElem.style;
       style.left = rectangle.left + 'px';
       style.top = rectangle.top + 'px';
-      
+
       this.dragabbleSection.appendChild(draggableElem);
     },
-    
+
    /*
     * This method is invoked when the draggable elem is moving
     *
@@ -129,7 +142,7 @@ if (!owd.Icon) {
         + (x - this.initX) + 'px,'
         + (y - this.initY) + 'px)';
     },
-    
+
    /*
     * This method is invoked when the drag gesture finishes
     */
@@ -137,7 +150,7 @@ if (!owd.Icon) {
       delete this.listItem.dataset.dragging;
       this.dragabbleSection.removeChild(this.draggableElem);
     }
-    
+
   }
 }
 
@@ -196,7 +209,7 @@ if (!owd.Page) {
     },
 
    /*
-    * Moves the page to the right of the screen 
+    * Moves the page to the right of the screen
     */
     moveToRight: function() {
       var style = this.container.style;
@@ -205,7 +218,7 @@ if (!owd.Page) {
     },
 
    /*
-    * Moves the page to the left of the screen 
+    * Moves the page to the left of the screen
     */
     moveToLeft: function() {
       var style = this.container.style;
@@ -309,7 +322,7 @@ if (!owd.Page) {
     getLastIcon: function() {
       return this.licons[this.olist.lastChild.dataset.origin];
     },
-    
+
    /*
     * Appends an icon to the end of the page
     *
@@ -349,7 +362,7 @@ if (!owd.Page) {
       delete this.licons;
       this.container.parentNode.removeChild(this.container);
     },
-    
+
    /*
     * Returns the number of apps
     */

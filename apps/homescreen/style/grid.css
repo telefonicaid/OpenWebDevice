@@ -79,8 +79,8 @@
   .apps img {
     max-width: 100%;
     width: 75%;
+    border: 1px solid #000;
     border-radius: 50%; /* Circle */
-    
   }
 
   /* label */
@@ -117,7 +117,7 @@
     overflow: visible;
     text-shadow: 0 0 5px #666;
   }
-  
+
   @-moz-keyframes spaceboots {
     0% { -moz-transform: translate(2px, 1px) rotate(0deg); }
     10% { -moz-transform: translate(-1px, -2px) rotate(-1deg); }
@@ -131,7 +131,7 @@
     90% { -moz-transform: translate(2px, 2px) rotate(0deg); }
     100% { -moz-transform: translate(1px, -2px) rotate(-1deg); }
   }
-  
+
   /*
   .apps[data-mode = 'edit'] ol > li div.figure {
     -moz-animation-name: spaceboots;
@@ -141,11 +141,11 @@
     -moz-animation-timing-function: linear;
     opacity: .8;
   }*/
-  
+
   .apps[data-mode = 'normal'] ol > li span.options {
     display: none;
   }
-  
+
   .apps ol > li[data-dragging] {
     opacity: 0;
   }
