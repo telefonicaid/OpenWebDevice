@@ -48,12 +48,12 @@ if (!owd.Icon) {
         img.src  = 'http://' + document.location.host + '/resources/images/Unknown.png';
       }
       
-      img.onload = function() {
+      /*img.onload = function() {
         var style = img.style;
         var w = img.width;
         style.height  = w + 'px';
-        //style.borderRadius = w/2 + 'px';
-      }
+        style.borderRadius = w/2 + 'px';
+      }*/
 
       // Label
       var label = document.createElement('span');

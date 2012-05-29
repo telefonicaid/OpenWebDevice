@@ -7,7 +7,7 @@
 
 .dots {
   width: 100%;
-  height: 5%;
+  height: 7%;
   text-align: center;
 }
 
@@ -20,7 +20,7 @@
 
 .apps {
   width: 100%;
-  height: 95%;
+  height: 93%;
   overflow: hidden;
 }
 
@@ -44,7 +44,7 @@
     display: inline-block;
     float: left;
     text-align: center;
-    padding-bottom: 2%;
+    padding-bottom: 4%;
   }
 
   /* Maximum 16 icons for page */
@@ -80,18 +80,22 @@
     max-width: 100%;
     width: 75%;
     border-radius: 50%; /* Circle */
+    
   }
 
   /* label */
   .apps span {
     text-transform: capitalize;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: bold;
     color: #fff;
     text-shadow: 0 0 4px #000000;
-    width: 100%;
+    width: 95%;
+    margin: 0 auto;
+    white-space: nowrap;
     text-overflow: clip;
     display: block;
+    overflow: hidden;
   }
 
   .apps .draggable {
