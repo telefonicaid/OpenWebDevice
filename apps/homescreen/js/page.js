@@ -3,6 +3,11 @@ var owd = window.owd || {};
 
 if (!owd.Icon) {
 
+ /*
+  * Icon constructor
+  *
+  * @param{Object} moz app object
+  */
   owd.Icon = function(app) {
     var origin = owdAppManager.getOrigin(app);
   
@@ -16,6 +21,15 @@ if (!owd.Icon) {
   }
 
   owd.Icon.prototype = {
+    
+    
+   /*
+    * Renders the icon into the page
+    *
+    * @param{Object} where the icon should be rendered
+    *
+    * @param{Object} where the draggable element should be appened
+    */
     render: function(target, container) {
       /*
        * <li dataset-origin="zzz">
@@ -47,13 +61,6 @@ if (!owd.Icon) {
       img.onerror = function() {
         img.src  = 'http://' + document.location.host + '/resources/images/Unknown.png';
       }
-      
-      /*img.onload = function() {
-        var style = img.style;
-        var w = img.width;
-        style.height  = w + 'px';
-        style.borderRadius = w/2 + 'px';
-      }*/
 
       // Label
       var label = document.createElement('span');
@@ -62,7 +69,7 @@ if (!owd.Icon) {
 
       listItem.appendChild(figure);
 
-      // Shader
+      // Touchable area
       var shader = document.createElement('div');
       shader.className = 'icon';
       shader.dataset.origin = origin;
@@ -77,11 +84,21 @@ if (!owd.Icon) {
       
       target.appendChild(listItem);
     },
-
+    
+   /*
+    * Returns the list item that contains to itself
+    */
     getListItem: function() {
       return this.listItem;
     },
     
+   /*
+    * This method is invoked when the drag gesture starts
+    *
+    * @param{int} x-coordinate
+    *
+    * @param{int} y-coordinate
+    */
     onDragStart: function(x, y) {
       this.initX = x;
       this.initY = y;
@@ -100,12 +117,22 @@ if (!owd.Icon) {
       this.dragabbleSection.appendChild(draggableElem);
     },
     
+   /*
+    * This method is invoked when the draggable elem is moving
+    *
+    * @param{int} x-coordinate
+    *
+    * @param{int} y-coordinate
+    */
     onDragMove: function(x, y) {
       this.draggableElem.style.MozTransform = 'translate('
         + (x - this.initX) + 'px,'
         + (y - this.initY) + 'px)';
     },
     
+   /*
+    * This method is invoked when the drag gesture finishes
+    */
     onDragStop: function() {
       delete this.listItem.dataset.dragging;
       this.dragabbleSection.removeChild(this.draggableElem);
@@ -116,6 +143,9 @@ if (!owd.Icon) {
 
 if (!owd.Page) {
 
+ /*
+  * Page constructor
+  */
   owd.Page = function() {
     this.licons = {};
   }
@@ -129,6 +159,13 @@ if (!owd.Page) {
       center: 'center'
     },
 
+   /*
+    * Renders a page for a list of apps
+    *
+    * @param{Array} list of apps
+    *
+    * @param{Object} target DOM element container
+    */
     render: function(apps, target) {
       this.container = target;
       var len = apps.length;
@@ -147,38 +184,74 @@ if (!owd.Page) {
       target.appendChild(this.olist);
     },
 
+   /*
+    * Sets the duration of the translations
+    *
+    * @param{Object} style object for a DOM element
+    *
+    * @param{int} the duration in milliseconds
+    */
     setTranstionDuration: function(style, duration) {
       style.MozTransition = duration ? ('all ' + duration + 's ease') : '';
     },
 
+   /*
+    * Moves the page to the right of the screen 
+    */
     moveToRight: function() {
       var style = this.container.style;
       style.MozTransform = 'translateX(100%)';
       this.setTranstionDuration(style, 0.2);
     },
 
+   /*
+    * Moves the page to the left of the screen 
+    */
     moveToLeft: function() {
       var style = this.container.style;
       style.MozTransform = 'translateX(-100%)';
       this.setTranstionDuration(style, 0.2);
     },
 
+   /*
+    * Moves the page to the center of the screen
+    */
     moveToCenter: function() {
       var style = this.container.style;
       style.MozTransform = 'translateX(0)';
       this.setTranstionDuration(style, 0.2);
     },
 
+   /*
+    * Applies a translation to the page
+    *
+    * @param{String} the app origin
+    */
     moveTo: function(translate) {
       var style = this.container.style;
       style.MozTransform = 'translateX(-moz-calc(' + translate + '))';
       this.setTranstionDuration(style, 0);
     },
 
+   /*
+    * Returns an icon given an origin
+    *
+    * @param{String} the app origin
+    */
     getIcon: function(origin) {
       return this.licons[origin];
     },
 
+   /*
+    * Changes position between two icons
+    *
+    * @param{String} origin icon
+    *
+    * @param{String} target icon
+    *
+    * @param{int} negative values indicate going upwards and positive
+    *             values indicate going backwards
+    */
     drop: function(origin, target, dir) {
       var licons = this.licons;
       if (dir < 0) {
@@ -190,6 +263,11 @@ if (!owd.Page) {
       }
     },
 
+   /*
+    * Implements the tap behaviour
+    *
+    * @param{Object} DOM element
+    */
     tap: function(elem) {
       var dataset = elem.dataset;
       if ('origin' in dataset) {
@@ -201,6 +279,11 @@ if (!owd.Page) {
       }
     },
 
+   /*
+    * Adds an icon to the begining of the page
+    *
+    * @param{Object} icon object
+    */
     prependIcon: function(icon) {
       var len = this.olist.length;
       if (len > 0) {
@@ -211,16 +294,27 @@ if (!owd.Page) {
       this.licons[icon.descriptor.origin] = icon;
     },
 
+   /*
+    * Removes the last icon of the page and returns it
+    */
     popIcon: function() {
       var icon = this.getLastIcon();
       this.remove(icon);
       return icon;
     },
 
+   /*
+    * Returns the last icon of the page
+    */
     getLastIcon: function() {
       return this.licons[this.olist.lastChild.dataset.origin];
     },
     
+   /*
+    * Appends an icon to the end of the page
+    *
+    * @param{Object} moz app or icon object
+    */
     append: function(app) {
       if (app.type && app.type === 'owd.Icon') {
         this.olist.appendChild(app.getListItem());
@@ -233,6 +327,11 @@ if (!owd.Page) {
       }
     },
 
+   /*
+    * Removes an application or icon from the page
+    *
+    * @param{Object} moz app or icon object
+    */
     remove: function(app) {
       var icon = app;
       if ('owd.Icon' !== app.type) {
@@ -243,11 +342,17 @@ if (!owd.Page) {
       delete this.licons[icon.descriptor.origin];
     },
 
+   /*
+    * Destroys the component page
+    */
     destroy: function() {
       delete this.licons;
       this.container.parentNode.removeChild(this.container);
     },
     
+   /*
+    * Returns the number of apps
+    */
     getNumApps: function() {
       return this.olist.childNodes.length;
     },
