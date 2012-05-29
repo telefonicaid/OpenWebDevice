@@ -317,11 +317,11 @@ if (!owd.GridManager) {
     function renderFromDB() {
       owd.HomeState.getAppsByPage(
         function iterate(apps) {
-          // iterating saved pages
+          console.log('Iterating saved pages');
           pageHelper.push(apps, true);
          }, function(results) {
           if (results === 0) {
-            // Empty database -> the first time
+            console.log('Empty database -> This is the first time');
             renderFromMozApps();
           } else {
             // Grid was loaded from DB
