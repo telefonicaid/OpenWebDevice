@@ -50,3 +50,9 @@ section,footer,nav,a,img {
 body[data-state='idle'] footer {
   display:none;
 }
+
+@media screen and (max--moz-device-pixel-ratio: 1.5) {
+ Ê Êhtml, body {
+ Ê Ê Ê Êfont-size: 13.3px;
+ Ê Ê}
+}
