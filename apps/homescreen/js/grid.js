@@ -11,6 +11,9 @@ if (!owd.GridManager) {
         tapHoldTimeout = 400, tapHoldTimer, status, draggableIcon, draggableIconOrigin,
         limits, canceledTapHoldObserver = false, wmode, px = 'px';
 
+    /*
+     * Initializes the component
+     */
     function initialize() {
       status = {
         target: undefined, // target element
@@ -142,6 +145,11 @@ if (!owd.GridManager) {
       window.addEventListener(endEvent, owd.GridManager);
     }
     
+    /*
+     * Implements the observer for detecting tap and hold in the grid
+     *
+     * @param{Object} Event object
+     */
     function addTapHoldObserver(evt) {
       tapHoldTimer = setTimeout(function() {
         keepPosition(); // Sadly clicking on icons could fire touchmove events
@@ -198,6 +206,9 @@ if (!owd.GridManager) {
       container.parentNode.dispatchEvent(ev);
     }
     
+    /*
+     * Clicks on icons fires touchmove events for poor devices
+     */
     var thresholdForTapping = 10;
     
     /*
@@ -261,6 +272,9 @@ if (!owd.GridManager) {
       }
     }
 
+    /*
+     * Renders the homescreen from moz applications
+     */
     function renderFromMozApps() {
       var max = pageHelper.getMaxPerPage();
       var list = [];
@@ -285,6 +299,9 @@ if (!owd.GridManager) {
       pageHelper.saveAll();
     }
 
+    /*
+     * Renders the homescreen from the database
+     */
     function renderFromDB() {
       owd.HomeState.getAppsByPage(
         function iterate(apps) {
@@ -509,6 +526,11 @@ if (!owd.GridManager) {
        */
       isTranslatingPages: false,
       
+      /*
+       * Sets the isTranslatingPages variable
+       *
+       * @param {Boolean} the value
+       */
       setTranslatingPages: function(value) {
         this.isTranslatingPages = value;
         if (value) {
@@ -618,17 +640,28 @@ if (!owd.GridManager) {
 
     var Dots = {
 
+      /*
+       * List of dot elements
+       */
       list: [],
 
       DOT_ON: 'resources/images/pagination_on.png',
 
       DOT_OFF: 'resources/images/pagination_off.png',
 
+      /*
+       * Initializes the component
+       *
+       * @param {Object} the container for the dots
+       */
       init: function(container) {
         this.wrapper = typeof container === 'object' ? container : doc.querySelector(container);
         this.wrapper.style.lineHeight = this.wrapper.offsetHeight + 'px';
       },
 
+      /*
+       * Renders all dots
+       */
       render: function() {
         var current = pages.current;
         var total = pageHelper.total();
@@ -638,6 +671,9 @@ if (!owd.GridManager) {
         
       },
 
+      /*
+       * Creates a dot element
+       */
       createDot: function(on) {
         var dot = doc.createElement('img');
         dot.className = 'circle';
@@ -646,6 +682,9 @@ if (!owd.GridManager) {
         this.wrapper.appendChild(dot);
       },
 
+      /*
+       * Updates the pagination dots
+       */
       update: function() {
         var dots = this.wrapper.childNodes;
         var total = pageHelper.total();
