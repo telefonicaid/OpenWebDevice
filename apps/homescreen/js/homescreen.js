@@ -12,6 +12,7 @@ if(!owd.Homescreen) {
    
     // Listening for keys 
     window.addEventListener('keyup', function(e) {
+      // Click on the Home button to reset the mode of the grid
       if (e.keyCode === e.DOM_VK_HOME) {
         owd.GridManager.setMode('normal');
       }
