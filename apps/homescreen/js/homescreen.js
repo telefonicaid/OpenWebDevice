@@ -5,8 +5,9 @@ if(!owd.Homescreen) {
   (function(doc) {
     'use strict';
 
-    // Strip is centered
+    // Initializating the components: strip & grid
     owdStrip.ui.init();
+    
     owd.GridManager.init('.apps', '.dots');
    
     // Listening for keys 
@@ -27,6 +28,12 @@ if(!owd.Homescreen) {
     };
     
     owd.Homescreen = {
+      
+      /*
+       * Displays the contextual menu given an origin
+       *
+       * @param {String} the app origin
+       */
       showContextualMenu: function(origin) {
         // FIXME: localize this message 
         var data = {
@@ -63,8 +70,16 @@ if(!owd.Homescreen) {
     var startEvent = 'mousedown', moveEvent = 'mousemove',
         endEvent = 'mouseup', threshold = window.innerWidth / 3;
     
+   /*
+    * This component controls the transitions between carousel and grid
+    */
     var viewController = {
       
+      /*
+       * Initializes the component
+       *
+       * @param {Object} The homescreen container
+       */
       init: function(container) {
         container.addEventListener(startEvent, this);
         this.pages = container.getElementsByClassName('view');
@@ -72,6 +87,13 @@ if(!owd.Homescreen) {
         this.currentPage = 0;
       },
       
+      /*
+       * Navigates to a section given the number
+       *
+       * @param {int} number of the section
+       *
+       * @param {int} duration of the transition
+       */
       navigate: function(number, duration) {
         var total = this.total;
         for (var n = 0; n < total; n++) {
@@ -83,6 +105,13 @@ if(!owd.Homescreen) {
         this.currentPage = number;
       },
       
+      /*
+       * Implements the transition of sections following the finger
+       *
+       * @param {int} x-coordinate
+       *
+       * @param {int} duration of the transition
+       */
       pan: function(x, duration) {
         var currentPage = this.currentPage;
         var total = this.total;
@@ -114,16 +143,31 @@ if(!owd.Homescreen) {
         }
       },
       
+      /*
+       * Listens for touchstart events
+       *
+       * @param {Object} the event
+       */
       onStart: function(evt) {
         this.startX = evt.pageX;
         window.addEventListener(moveEvent, this);
         window.addEventListener(endEvent, this);
       },
       
+      /*
+       * Listens for touchmove events
+       *
+       * @param {Object} the event
+       */
       onMove: function(evt) {
         this.pan(-(this.startX - evt.pageX), 0);
       },
       
+      /*
+       * Listens for touchend events
+       *
+       * @param {Object} the event
+       */
       onEnd: function(evt) {
         window.removeEventListener(moveEvent, this);
         window.removeEventListener(endEvent, this);
@@ -138,7 +182,7 @@ if(!owd.Homescreen) {
       }
     }
     
-    // Initializating the viewSwitcher
+    // Initializating the viewController component
     viewController.init(doc.querySelector('#content'));
   })(document);
 }
