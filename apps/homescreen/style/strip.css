@@ -19,7 +19,7 @@
           position:relative;
 }
 
-img {
+#strip img {
   max-width: 100%;
 
   border: 1px solid #585858;
