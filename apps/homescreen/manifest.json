@@ -1,5 +1,5 @@
 {
-  "name": "Homescreen",
+  "name": "HomescreenTID",
   "description": "Telefonica Homescreen",
   "launch_path": "/homescreen.html",
   "developer": {
@@ -55,5 +55,6 @@
       "description": "Gaia \u4e3b\u756b\u9762"
     }
   },
-  "default_locale": "en-US"
+  "default_locale": "en-US",
+  "orientation": "portrait-primary"
 }
