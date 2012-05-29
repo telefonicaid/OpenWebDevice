@@ -31,7 +31,7 @@ if (!owd.Icon) {
     };
 
     this.type = 'owd.Icon';
-  }
+  };
 
   owd.Icon.prototype = {
 
@@ -72,7 +72,7 @@ if (!owd.Icon) {
       figure.appendChild(img);
 
       img.onerror = function() {
-        img.src  = 'http://' + document.location.host + '/resources/images/Unknown.png';
+        img.src = 'http://' + document.location.host + '/resources/images/Unknown.png';
       }
 
       // Label
@@ -151,7 +151,7 @@ if (!owd.Icon) {
       this.dragabbleSection.removeChild(this.draggableElem);
     }
 
-  }
+  };
 }
 
 if (!owd.Page) {
@@ -161,7 +161,7 @@ if (!owd.Page) {
   */
   owd.Page = function() {
     this.licons = {};
-  }
+  };
 
   owd.Page.prototype = {
 
@@ -377,10 +377,10 @@ if (!owd.Page) {
       var ret = [];
       var nodes = this.olist.childNodes;
       var len = nodes.length;
-      for(var i = 0; i < len; i++) {
+      for (var i = 0; i < len; i++) {
         ret.push(nodes[i].dataset.origin);
       }
       return ret;
     }
-  }
+  };
 }

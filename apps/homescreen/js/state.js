@@ -12,7 +12,7 @@
  */
 var owd = window.owd || {};
 
-if(!owd.HomeState) {
+if (!owd.HomeState) {
 
   (function() {
     'use strict';
@@ -23,41 +23,41 @@ if(!owd.HomeState) {
 
     var database = null;
 
-    function openDB (success, error) {
+    function openDB(success, error) {
 
       if (window.mozIndexedDB) {
-        console.log("IndexedDB is here");
+        console.log('IndexedDB is here');
 
         try {
           var request = window.mozIndexedDB.open(DB_NAME, VERSION);
 
           request.onsuccess = function(event) {
             database = event.target.result;
-            console.log("Database opened for the Homescreen");
+            console.log('Database opened for the Homescreen');
             success();
           };
 
           request.onerror = function(event) {
-            console.log("Database error: " + event.target.errorCode);
+            console.log('Database error: ' + event.target.errorCode);
             error();
           };
 
           request.onupgradeneeded = function(event) {
             var db = event.target.result;
-            var objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
-            objectStore.createIndex("byPage", "id", { unique: true });
+            var objectStore =
+              db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            objectStore.createIndex('byPage', 'id', { unique: true });
           };
         } catch (ex) {
           console.log(ex.message);
           error();
         }
       } else {
-        console.log("Indexed DB is not available. It is time you update your browser!!!");
+        console.log('Indexed DB is not available!!!');
         error();
       }
 
     }
-
 
     function newTxn(txn_type, callback, successCb, failureCb) {
       var txn = database.transaction([STORE_NAME], txn_type);
@@ -65,12 +65,12 @@ if(!owd.HomeState) {
 
       callback(txn, store);
 
-      txn.oncomplete = function (event) {
+      txn.oncomplete = function(event) {
         successCb(event);
       };
 
-      txn.onerror = function (event) {
-        window.console.error("Caught error on transaction: ", event.target.errorCode);
+      txn.onerror = function(event) {
+        console.error('Caught error on transaction: ', event.target.errorCode);
         failureCb(event.target.errorCode);
       };
     }
@@ -83,9 +83,10 @@ if(!owd.HomeState) {
 
       save: function(pages, success, error) {
         if (database) {
-          newTxn('readwrite', function (txn, store) {
+          newTxn('readwrite', function(txn, store) {
             if (Object.prototype.toString.call(pages) === '[object Array]') {
-              store.clear(); //TODO We clear store because we can have legacy pages
+              //TODO We clear store because we can have legacy pages
+              store.clear();
               var len = pages.length;
               for (var i = 0; i < len; i++) {
                 var page = pages[i];
@@ -104,13 +105,13 @@ if(!owd.HomeState) {
         }
       },
 
-      getAppsByPage: function (iteratee, success, error) {
+      getAppsByPage: function(iteratee, success, error) {
         if (database) {
           var results = 0;
-          newTxn('readonly', function (txn, store) {
+          newTxn('readonly', function(txn, store) {
             var index = store.index('byPage');
             var request = index.openCursor();
-            request.onsuccess = function (event) {
+            request.onsuccess = function(event) {
               var cursor = event.target.result;
               if (cursor) {
                 iteratee(cursor.value.apps);
@@ -122,7 +123,7 @@ if(!owd.HomeState) {
         } else {
           error('Database is not available');
         }
-      },
-    }
+      }
+    };
   })();
 }

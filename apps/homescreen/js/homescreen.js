@@ -12,43 +12,43 @@
  */
 var owd = window.owd || {};
 
-if(!owd.Homescreen) {
+if (!owd.Homescreen) {
 
   (function(doc) {
     'use strict';
 
     // Initializating the components: strip & grid
     owdStrip.ui.init();
-    
+
     owd.GridManager.init('.apps', '.dots');
-   
-    // Listening for keys 
+
+    // Listening for keys
     window.addEventListener('keyup', function(e) {
       // Click on the Home button to reset the mode of the grid
       if (e.keyCode === e.DOM_VK_HOME) {
         owd.GridManager.setMode('normal');
       }
     }, true);
-    
+
     // Listening for installed apps
     owdAppManager.addEventListener('oninstall', function(app) {
       owd.GridManager.install(app);
     });
-    
+
     // Listening for uninstalled apps
     navigator.mozApps.mgmt.onuninstall = function uninstall(event) {
       owd.GridManager.uninstall(event.application);
     };
-    
+
     owd.Homescreen = {
-      
+
       /*
        * Displays the contextual menu given an origin
        *
        * @param {String} the app origin
        */
       showContextualMenu: function(origin) {
-        // FIXME: localize this message 
+        // FIXME: localize this message
         var data = {
           origin: origin,
           options: [
@@ -58,14 +58,14 @@ if(!owd.Homescreen) {
             },{
               label: 'Delete App',
               id: 'delete'
-            },
+            }
           ]
         };
-        
+
         contextualMenu.show(data, function(action) {
           if (action === 'delete') {
             var app = owdAppManager.getByOrigin(origin);
-  
+
             // FIXME: localize this message
             // FIXME: This could be a simple confirm() (see bug 741587)
             requestPermission(
@@ -79,15 +79,15 @@ if(!owd.Homescreen) {
         });
       }
     };
-    
+
     var startEvent = 'mousedown', moveEvent = 'mousemove',
         endEvent = 'mouseup', threshold = window.innerWidth / 3;
-    
+
    /*
     * This component controls the transitions between carousel and grid
     */
     var viewController = {
-      
+
       /*
        * Initializes the component
        *
@@ -99,7 +99,7 @@ if(!owd.Homescreen) {
         this.total = this.pages.length;
         this.currentPage = 0;
       },
-      
+
       /*
        * Navigates to a section given the number
        *
@@ -117,7 +117,7 @@ if(!owd.Homescreen) {
         }
         this.currentPage = number;
       },
-      
+
       /*
        * Implements the transition of sections following the finger
        *
@@ -136,7 +136,7 @@ if(!owd.Homescreen) {
           style.MozTransition = duration ? ('all ' + duration + 's ease') : '';
         }
       },
-      
+
       /*
        * Event handling for the homescreen
        *
@@ -155,7 +155,7 @@ if(!owd.Homescreen) {
             break;
         }
       },
-      
+
       /*
        * Listens for touchstart events
        *
@@ -166,7 +166,7 @@ if(!owd.Homescreen) {
         window.addEventListener(moveEvent, this);
         window.addEventListener(endEvent, this);
       },
-      
+
       /*
        * Listens for touchmove events
        *
@@ -175,7 +175,7 @@ if(!owd.Homescreen) {
       onMove: function(evt) {
         this.pan(-(this.startX - evt.pageX), 0);
       },
-      
+
       /*
        * Listens for touchend events
        *
@@ -193,8 +193,8 @@ if(!owd.Homescreen) {
         }
         this.navigate(this.currentPage + dir, 0.2);
       }
-    }
-    
+    };
+
     // Initializating the viewController component
     viewController.init(doc.querySelector('#content'));
   })(document);

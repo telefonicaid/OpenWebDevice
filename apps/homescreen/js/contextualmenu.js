@@ -76,6 +76,6 @@ var contextualMenu = (function(doc) {
         screen = null;
       }
     }
-  }
+  };
 
 }(document));
