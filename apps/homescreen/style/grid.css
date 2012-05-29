@@ -89,7 +89,6 @@
     font-size: 1.4rem;
     font-weight: bold;
     color: #fff;
-    text-shadow: 0 0 4px #000000;
     width: 95%;
     margin: 0 auto;
     white-space: nowrap;
@@ -108,12 +107,15 @@
   }
 
   .apps .draggable img {
-    -moz-transform: scale(1.1);
-    padding-bottom: 12%;
+    box-shadow: 0 0 5px 5px #666;
   }
 
   .apps .draggable span {
     font-size: 2rem;
+    white-space: normal;
+    text-overflow: visible;
+    overflow: visible;
+    text-shadow: 0 0 5px #666;
   }
   
   @-moz-keyframes spaceboots {
