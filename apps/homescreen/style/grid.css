@@ -81,8 +81,8 @@
     width: 75%;
     border: 1px solid #585858;
     border-radius: 50%; /* Circle */
-    box-shadow: 0 5px 5px -3px black;
-    margin-bottom: 2%;
+    /* box-shadow: 0 5px 5px -3px black; */
+    margin-bottom: 4%;
   }
 
   /* label */

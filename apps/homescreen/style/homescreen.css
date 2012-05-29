@@ -9,6 +9,10 @@ html, body {
   background-color: #8abbd7;
 }
 
+html {
+  font-size: 10px;
+}
+
 * {
   -moz-user-select:none;
 }
@@ -45,14 +49,16 @@ section,footer,nav,a,img {
   position:fixed;
   top: 92%;
   z-index: 10000;
+  background-color: #383B3D;
+  text-align: center;
 }
 
 body[data-state='idle'] footer {
   display:none;
 }
 
-@media screen and (max--moz-device-pixel-ratio: 1.5) {
- Ê Êhtml, body {
- Ê Ê Ê Êfont-size: 13.3px;
+@media screen and (-webkit-device-pixel-ratio: 1.5), screen and (max--moz-device-pixel-ratio: 1.5) {
+ Ê Êhtml {
+ Ê Ê Ê Êfont-size: 15px;
  Ê Ê}
 }
