@@ -1,0 +1,12 @@
+CACHE MANIFEST
+# Version ece3231739c2a9e45a4254ff2ef1224f
+fb.html
+
+manifest.json
+style/.DS_Store
+style/icons/facebook.png
+throbber.gif
+http://gaiamobile.org/webapi.js
+NETWORK:
+http://*
+https://*
