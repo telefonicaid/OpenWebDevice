@@ -1,0 +1,148 @@
+<!--
+App ID:	260304060715688
+App Secret:	dd3acf5913c0cf0519b7c4ce26628bad
+Facebook application proof of concept
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <meta http-equiv="pragma" content="no-cache">
+        <title>Facebook App</title>
+
+        <script src="js/fb.js"></script>
+
+        <link rel="stylesheet" href="style/fb.css">
+    </head>
+
+    <body data-state='default'>
+      <section id="content" style="margin:0;padding:0;width:100%">
+
+      <div id="ident">
+        <img style="float:left;margin-right:1em" alt="Photo">
+        <p style="float:left"><strong>Loading ...</strong></p>
+      </div>
+
+      <div id="options" style="clear:left">
+        <button type=button onclick="getFriends()">Get Friends</button>
+        <button type=button onclick="getNews()">Get News</button>
+        <button type=button onclick="logout()">Logout</button>
+      </div>
+
+        <ul style="float:left">
+        </ul>
+
+        <ol style="float:left" desc id="news">
+        </ol>
+
+      </section>
+
+      <div id="wait" style="bottom:50%;position:absolute;left:50%">
+          <img src="throbber.gif">
+      </div>
+
+      <div id="logout">
+        <p>Logged Out!</p>
+        <a href="http://facebook.gaiamobile.org/fb.html">Log in</a>
+      </div>
+
+        <script>
+         var oauth = 'https://m.facebook.com/dialog/oauth?';
+         var accessToken;
+
+            var appID = '260304060715688';
+            var hash = window.location.hash;
+            var ACC_T = 'access_token';
+
+
+        window.addEventListener('load',function()  {
+
+            window.console.log("The hash is: ", hash);
+            window.console.log('document.location.search: ',document.location);
+
+            if(document.location.toString().indexOf('logout=1') !== -1) {
+              document.body.dataset.state  = 'logout';
+            }
+            else {
+
+              accessToken = getAccessToken();
+
+              if(accessToken) {
+                  if(document.location.toString().indexOf('preview=1') !== -1) {
+                          window.console.log('Loading News');
+                          document.body.dataset.state = 'waiting';
+                          getNews();
+                  } else {
+
+                        window.console.log('Getting user info');
+
+                        var userDataService = 'https://graph.facebook.com/me?';
+                        var params = ['access_token=' + accessToken,
+                                      'callback=userDataReady'];
+
+                        var q = params.join('&');
+
+                        var jsonp = document.createElement('script');
+                        jsonp.src = userDataService + q;
+                        document.body.appendChild(jsonp);
+                    }
+                }
+          }
+
+        });
+        </script>
+
+        <script>
+          function getAccessToken() {
+            var ret;
+
+            if(typeof window.localStorage.access_token === 'undefined') {
+
+              window.console.log('No access token stored!!!');
+
+              var hash = window.location.hash;
+
+              if(hash.length > 0) {
+                if(hash.indexOf(ACC_T) === 1) {
+                  var end = hash.length;
+                  var expires = hash.indexOf('&');
+                  if(expires !== -1) {
+                      end = expires;
+                  }
+
+                  ret = hash.substring(ACC_T.length + 2,end);
+
+                  window.localStorage.access_token = ret;
+
+                  window.console.log('Access Token:',ret);
+                }
+              } else {
+                startOAuth();
+              }
+            }
+            else {
+              window.console.log('Reusing existing access token');
+              ret = window.localStorage.access_token;
+            }
+
+            return ret;
+          }
+
+          function startOAuth() {
+            var queryParams = ['client_id=' + appID,
+                                      'redirect_uri='
+                                          + encodeURIComponent(window.location),
+                                      'response_type=token',
+                                      'scope=' + encodeURIComponent('read_stream')];
+            var query = queryParams.join('&');
+            var url = oauth + query;
+
+            window.console.log('URL: ', url);
+
+            document.location = url;
+          }
+        </script>
+    </body>
+</html>
