@@ -8,17 +8,24 @@ OUT_DIR_APPS ?= $(OUT_DIR)/apps
 
 all: install-owd
 
-sync-develop:
-	$(GIT) checkout develop
-	$(GIT) pull origin develop
+.PHONY: submodule-sync
+submodule-sync:
 	$(GIT) submodule sync
 	$(GIT) submodule update --init
 
-sync-master:
+.PHONY: pull-develop
+pull-develop:
+	$(GIT) checkout develop
+	$(GIT) pull origin develop
+
+.PHONY: pull-master
+pull-master:
 	$(GIT) checkout master
 	$(GIT) pull origin master
-	$(GIT) submodule sync
-	$(GIT) submodule update --init
+
+sync-develop: pull-develop submodule-sync
+
+sync-master: pull-master submodule-sync
 
 .PHONY: out
 out:
