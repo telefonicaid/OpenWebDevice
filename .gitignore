@@ -1,0 +1,12 @@
+.DS_Store
+*.rej
+*.orig
+*.swp
+*~
+manifest.appcache
+apps/settings/gaia-commit.txt
+apps/test-agent/test/config.json
+profile/
+xulrunner/
+xulrunner-sdk/
+node_modules
