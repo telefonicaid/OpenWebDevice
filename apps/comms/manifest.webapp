@@ -1,0 +1,24 @@
+{
+  "name": "Comms",
+  "description": "OWD Comms",
+  "launch_path": "/",
+  "developer": {
+    "name": "Telefonica Digital Team",
+    "url": "https://github.com/telefonicaid/OpenWebDevice"
+  },
+	"permissions": [
+	    "mozApps"
+	],
+  "locales": {
+    "en-US": {
+      "name": "Comms",
+      "description": "Connect"
+    },
+    "es": {
+      "name": "Comms",
+      "description": "Connect"
+    }
+  },
+  "default_locale": "en-US",
+  "orientation": "portrait-primary"
+}
