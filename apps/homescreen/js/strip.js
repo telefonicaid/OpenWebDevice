@@ -62,18 +62,6 @@ if(typeof owdStrip === 'undefined') {
 
   window.console.log('Num Entries on the strip: ',numEntries);
 
-  /* window.addEventListener('mozChromeEvent',runPreview);
-
-  function runPreview(e) {
-    if (e.detail.type === 'webapps-launch') {
-      window.console.log('!!!!App Event:',JSON.stringify(e.detail));
-
-      var origin = e.detail.origin;
-      if (origin === 'http://facebook.gaiamobile.org') {
-        document.querySelector('#preview').src = origin;
-      }
-    }
-  } */
 
   /**
    *   Initializes the strip parameters and layout
@@ -129,39 +117,42 @@ if(typeof owdStrip === 'undefined') {
       window.console.log('Last Distance',lastDistance,threshold);
 
       var distanceX = e.clientX - overX;
-      var distanceY = e.clientY - overY;
 
-      lastDistance = distanceX;
+      if(Math.abs(distanceX) > 7) {
+        var distanceY = e.clientY - overY;
 
-      // The strip is moved
+        lastDistance = distanceX;
 
-      window.console.log('Distance X: ',distanceX);
+        // The strip is moved
 
-      var suggestedTranslation = currentTranslation + distanceX;
-      window.console.log('Suggested Translation: ',currentTranslation + distanceX);
+        window.console.log('Distance X: ',distanceX);
 
-      if(suggestedTranslation >= topRightTranslation
-                                && suggestedTranslation <= topLeftTranslation) {
-        currentTranslation += distanceX;
-      }
-      else {
-        if(suggestedTranslation < topRightTranslation) {
-          currentTranslation = topRightTranslation;
+        var suggestedTranslation = currentTranslation + distanceX;
+        window.console.log('Suggested Translation: ',currentTranslation + distanceX);
+
+        if(suggestedTranslation >= topRightTranslation
+                                  && suggestedTranslation <= topLeftTranslation) {
+          currentTranslation += distanceX;
         }
-        else if(suggestedTranslation > topLeftTranslation) {
-          currentTranslation = topLeftTranslation;
+        else {
+          if(suggestedTranslation < topRightTranslation) {
+            currentTranslation = topRightTranslation;
+          }
+          else if(suggestedTranslation > topLeftTranslation) {
+            currentTranslation = topLeftTranslation;
+          }
         }
+
+        ul.translate(currentTranslation,0,true);
+
+        doFocus();
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        overX = e.clientX;
+        overY = e.clientY;
       }
-
-      ul.translate(currentTranslation,0,true);
-
-      doFocus();
-
-      e.stopPropagation();
-      e.preventDefault();
-
-      overX = e.clientX;
-      overY = e.clientY;
 
       /*
       document.querySelector('#preview').style.height = '0%';
@@ -194,14 +185,16 @@ if(typeof owdStrip === 'undefined') {
     // document.querySelector('#preview').style.height = '56%';
     // document.querySelector('#preview').style.top = '10%';
 
-    var manifest = owdAppManager.getByOrigin(selected.querySelector('a').href).manifest;
+    var app = selected.querySelector('a').href;
 
-    if(manifest.previewMode === true) {
-      owdAppManager.launch('http://facebook.gaiamobile.org',{preview: '1'});
+    var manifest = owdAppManager.getByOrigin(app).manifest;
+
+    if(manifest.previewMode === true || app === 'http://facebook.gaiamobile.org/') {
+      owdAppManager.launch(app,{preview: '1'});
     }
     else {
       // close preview if (any)
-      owdAppManager.launch('http://facebook.gaiamobile.org',{close: '1'});
+      owdAppManager.launch('http://facebook.gaiamobile.org/',{close: '1'});
     }
   }
 
