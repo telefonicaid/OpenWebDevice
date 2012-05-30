@@ -93,3 +93,9 @@ footer {
   position:absolute;
   bottom: 5%;
 }
+
+@media screen and (min-device-width: 480px) {
+  #strip li {
+    width:90px;
+  }
+}
