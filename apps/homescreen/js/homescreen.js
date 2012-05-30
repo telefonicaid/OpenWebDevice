@@ -43,6 +43,15 @@ if (!owd.Homescreen) {
     navigator.mozApps.mgmt.onuninstall = function uninstall(event) {
       owd.GridManager.uninstall(event.application);
     };
+    
+    // Listening for clicks on the footer
+    doc.addEventListener('click', function(event) {
+      var dataset = event.target.dataset;
+      if ('origin' in dataset) {
+        owdAppManager.launch(dataset.origin);
+        console.log('Launching app from the dock: ' + dataset.origin);
+      }
+    });
 
     owd.Homescreen = {
 
