@@ -87,3 +87,8 @@ iframe#preview {
   -moz-transition-duration: 0.7s;
   overflow:hidden;
 }
+
+footer {
+  position:absolute;
+  bottom: 5%;
+}
