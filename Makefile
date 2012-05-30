@@ -28,7 +28,7 @@ sync-develop: pull-develop submodule-sync
 sync-master: pull-master submodule-sync
 
 .PHONY: out
-out:
+out: submodule-sync
 	@echo "Creating output dir..."; \
 	rm -rf $(GAIA_PATH)/profile; \
 	if [ ! -d $(OUT_DIR) ]; \
