@@ -1,0 +1,32 @@
+{
+  "name": "Facebook",
+  "description": "Open Web Device Facebook",
+  "launch_path": "/fb.html",
+  "developer": {
+    "name": "Telefonica",
+    "url": "http://www.tid.es"
+  },
+  "locales": {
+    "en-US": {
+      "name": "Facebook",
+      "description": "Social Network"
+    },
+    "es": {
+      "name": "Facebook",
+      "description": "Red Social"
+    },
+    "fr": {
+      "name": "Horloge",
+      "description": "Horloge Gaia"
+    },
+    "pt-BR": {
+      "name": "Rel\u00f3gio",
+      "description": "Rel\u00f3gio do Gaia"
+    }
+  },
+  "default_locale": "en-US",
+  "icons": {
+    "120": "/style/icons/facebook.png"
+  },
+  "previewMode": "true"
+}
