@@ -190,11 +190,39 @@ if(typeof owdStrip === 'undefined') {
     var manifest = owdAppManager.getByOrigin(app).manifest;
 
     if(manifest.previewMode === true || app === 'http://facebook.gaiamobile.org/') {
-      owdAppManager.launch(app,{preview: '1'});
+      // owdAppManager.launch(app,{preview: '1'});
+      var opreview = document.querySelector('#preview');
+      var preview;
+
+      if(opreview === null) {
+        window.console.log('Creating a new preview iframe');
+        preview = document.createElement('iframe');
+      }
+      else {
+            preview = opreview;
+            // preview.setAttribute('hidden',false);
+      }
+
+      preview.id = 'preview';
+
+      preview.zIndex = 1;
+
+      preview.src = e.detail.url;
+
+      if(!opreview) {
+        document.body.appendChild(preview);
+        window.setTimeout(function() {preview.style.height = '55%';},25);
+      }
+
+      window.console.log('Preview opened!!');
     }
     else {
       // close preview if (any)
-      owdAppManager.launch('http://facebook.gaiamobile.org/',{close: '1'});
+      // owdAppManager.launch('http://facebook.gaiamobile.org/',{close: '1'});
+      var opreview = document.querySelector('#preview');
+      if(opreview) {
+        document.body.removeChild(opreview);
+      }
     }
   }
 

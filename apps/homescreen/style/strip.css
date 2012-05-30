@@ -72,3 +72,18 @@ span.notification {
 img {
   -moz-user-select: none;
 }
+
+iframe#preview {
+  height: 0%;
+  margin:0;
+  padding:0;
+  width:90%;
+  position:absolute;
+  bottom:35%;
+  left:5%;
+  border:none;
+  background: white;
+  -moz-transition-property: height;
+  -moz-transition-duration: 0.7s;
+  overflow:hidden;
+}
