@@ -18,12 +18,12 @@ if (!owd.Homescreen) {
     'use strict';
 
     const HOMESCREEN_TEF = owdConfig.homescreen === 'TEF';
-    
+
     // Initializating the components: strip & grid
     if (HOMESCREEN_TEF) {
       owdStrip.ui.init();
     }
-    
+
     owd.GridManager.init('.apps', '.dots');
 
     // Listening for keys
@@ -43,13 +43,13 @@ if (!owd.Homescreen) {
     navigator.mozApps.mgmt.onuninstall = function uninstall(event) {
       owd.GridManager.uninstall(event.application);
     };
-    
+
     // Listening for clicks on the footer
-    doc.addEventListener('click', function(event) {
-      var dataset = event.target.dataset;
-      if ('origin' in dataset) {
-        owdAppManager.launch(dataset.origin);
-        console.log('Launching app from the dock: ' + dataset.origin);
+    doc.querySelector('#footer').addEventListener('click', function(event) {
+      var dataset2 = event.target.dataset;
+      if (dataset2 && typeof dataset2.origin !== 'undefined') {
+        owdAppManager.launch(dataset2.origin);
+        console.log('Launching app from the dock: ' + dataset2.origin);
       }
     });
 
@@ -68,12 +68,12 @@ if (!owd.Homescreen) {
             label: 'Add to carousel',
             id: 'add'
           });
-        } 
+        }
         options.push({
           label: 'Delete App',
           id: 'delete'
         });
-        
+
         var data = {
           origin: origin,
           options: options

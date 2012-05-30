@@ -70,7 +70,7 @@ section,footer,nav,a,img {
     display: inline-block;
     float: left;
   }
-  
+
   .dock [class*="i-"] {
     display: inline-block;
     vertical-align: middle;
@@ -102,11 +102,24 @@ section,footer,nav,a,img {
 
 /* END footer */
 
+button:focus::-moz-focus-inner {
+  border-color: transparent !important;
+}
+
+button::-moz-focus-inner {
+  border: none;
+  padding: 0;
+}
+
+button {
+   outline: none;
+}
+
 @media screen and (min-device-width: 480px) {
   html {
     font-size: 15px;
   }
-  
+
   .i-phone {
     margin: -0.7rem; /*TOFIX this hack*/
   }

@@ -290,12 +290,15 @@ if (!owd.Page) {
     * @param{Object} DOM element
     */
     tap: function(elem) {
-      var dataset = elem.dataset;
-      if ('origin' in dataset) {
+
+      window.console.log('OWD: Tapped',Date.now());
+
+      var dataset2 = elem.dataset;
+      if (dataset2 && typeof dataset2.origin !== 'undefined') {
         if (owd.GridManager.isEditMode()) {
-          owd.Homescreen.showContextualMenu(dataset.origin);
+          owd.Homescreen.showContextualMenu(dataset2.origin);
         } else {
-          owdAppManager.launch(dataset.origin);
+          owdAppManager.launch(dataset2.origin);
         }
       }
     },
