@@ -207,7 +207,7 @@ if(typeof owdStrip === 'undefined') {
 
       preview.zIndex = 1;
 
-      preview.src = e.detail.url;
+      preview.src = app + manifest.launch_path + "?preview=1";
 
       if(!opreview) {
         document.body.appendChild(preview);
@@ -234,19 +234,29 @@ if(typeof owdStrip === 'undefined') {
   function doFocus() {
     var nextScaled = stripCenterElement();
 
-    window.console.log('Next Scaled: ',nextScaled);
+    if(nextScaled !== scaledElement) {
+      window.console.log('Next Scaled: ',nextScaled);
 
-    // The old scaled is reset
-    if(scaledElement) {
-      scaledElement.className = '';
+      // The old scaled is reset
+      if(scaledElement) {
+        scaledElement.className = '';
+      }
+
+      // New element to be scaled
+      scaledElement = document.querySelector('li:nth-child(' + nextScaled + ')');
+
+      scaledElement.className = 'scaled';
+
+      window.clearTimeout(timerPreview);
+
+      var opreview = document.querySelector('#preview');
+      if(opreview) {
+        document.body.removeChild(opreview);
+      }
+
+      timerPreview = window.setTimeout(
+                            function() { openPreview(scaledElement); } ,1900);
     }
-
-    // New element to be scaled
-    scaledElement = document.querySelector('li:nth-child(' + nextScaled + ')');
-
-    scaledElement.className = 'scaled';
-
-    timerPreview = window.setTimeout(function() { openPreview(scaledElement); } ,1900);
   }
 
   /**

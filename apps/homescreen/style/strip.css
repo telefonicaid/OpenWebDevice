@@ -20,11 +20,12 @@
 }
 
 #strip img {
-  max-width: 100%;
+  width: 100%;
 
   border: 1px solid #585858;
   border-radius: 50%; /* Circle */
-  box-shadow: 0 5px 5px -3px black;
+  /*
+  box-shadow: 0 5px 5px -3px black; */
 }
 
 .scaled {
