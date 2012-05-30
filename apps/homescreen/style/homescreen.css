@@ -57,8 +57,8 @@ body[data-state='idle'] footer {
   display:none;
 }
 
-@media screen and (-webkit-device-pixel-ratio: 1.5), screen and (max--moz-device-pixel-ratio: 1.5) {
- Ê Êhtml {
- Ê Ê Ê Êfont-size: 15px;
- Ê Ê}
+@media screen and (min-device-width: 480px) {
+Ê Êhtml {
+Ê Ê Êfont-size: 15px;
+   }
 }

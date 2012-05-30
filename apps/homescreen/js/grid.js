@@ -17,6 +17,8 @@ if (!owd.GridManager) {
   (function(doc) {
     'use strict';
 
+    const HOMESCREEN_TEF = owdConfig.homescreen === 'TEF';
+
     var container, counter, pages, startEvent = 'mousedown',
         moveEvent = 'mousemove', endEvent = 'mouseup', elementTarget, iniPosX, curPosX,
         winInnerWidth = window.innerWidth, threshold = window.innerWidth / 3,
@@ -67,12 +69,12 @@ if (!owd.GridManager) {
         return {
           x: evt.touches[0].pageX,
           y: evt.touches[0].pageY
-        }
+        };
       } else {
         return {
           x: evt.pageX,
           y: evt.pageY
-        }
+        };
       }
     }
 
@@ -230,8 +232,12 @@ if (!owd.GridManager) {
      * @param{int} horizontal movement from start and current position
      */
     function swipingToCarousel(difX) {
-      return (!owd.GridManager.isEditMode() &&
+      if (HOMESCREEN_TEF) {
+        return (!owd.GridManager.isEditMode() &&
               pages.current === 0 && difX > thresholdForTapping);
+      } else {
+        return false;
+      }
     }
 
     /*
@@ -292,7 +298,7 @@ if (!owd.GridManager) {
       var list = [];
 
       var apps = owdAppManager.getAll();
-      for(var origin in apps) {
+      for (var origin in apps) {
         list.push(apps[origin]);
         if (list.length === max) {
           pageHelper.push(list, true);
@@ -306,6 +312,8 @@ if (!owd.GridManager) {
 
       // Renders pagination dots
       Dots.render();
+
+      addLanguageListener();
 
       // Saving initial state
       pageHelper.saveAll();
@@ -326,6 +334,7 @@ if (!owd.GridManager) {
           } else {
             // Grid was loaded from DB
             Dots.render();
+            addLanguageListener();
           }
         }, renderFromMozApps // Error recovering info about apps
       );
@@ -342,19 +351,36 @@ if (!owd.GridManager) {
     }
 
     /*
+     * Translates the UI
+     *
+     * Currently we only translate the app names
+     */
+    function addLanguageListener() {
+      SettingsListener.onPropModified('language.current', function(lang) {
+        if (lang && lang.length > 0) {
+          document.documentElement.lang = lang;
+          var total = pageHelper.total();
+          for (var i = 0; i < total; i++) {
+            pages.list[i].translate();
+          }
+        }
+      });
+    }
+
+    /*
      * Checks empty pages and deletes them
      */
     function checkEmptyPages() {
       var index = 0;
       var total = pages.total;
 
-      while(index < total) {
+      while (index < total) {
         var page = pages.list[index];
         if (page.getNumApps() === 0) {
           pageHelper.remove(index);
           break;
         }
-        index++
+        index++;
       }
     }
 
@@ -369,7 +395,7 @@ if (!owd.GridManager) {
       var total = pages.total;
       var max = pageHelper.getMaxPerPage();
 
-      while(index < total) {
+      while (index < total) {
         var page = pages.list[index];
         if (page.getNumApps() > max) {
           var propagateIco = page.popIcon();
@@ -380,7 +406,7 @@ if (!owd.GridManager) {
           }
           break;
         }
-        index++
+        index++;
       }
     }
 
@@ -395,13 +421,13 @@ if (!owd.GridManager) {
         if (x > 0) {
           return 1; // right
         } else {
-          return -1 // left
+          return -1; // left
         }
       } else {
         if (y > 0) {
-          return 2 // down
+          return 2; // down
         } else {
-          return -2 // top
+          return -2; // top
         }
       }
     }
@@ -413,7 +439,7 @@ if (!owd.GridManager) {
        *
        * @param {Array} initial list of apps or icons
        */
-      push: function (lapps, notUpdateDots) {
+      push: function(lapps, notUpdateDots) {
         var index = this.total() + 1;
         var page = new owd.Page(index - 1);
         page.render(lapps, createPageMarkup());
@@ -450,7 +476,7 @@ if (!owd.GridManager) {
         }
 
         pages.list[index].destroy(); // Destroy page
-        pages.list.splice(index,1); // Removes page from the list
+        pages.list.splice(index, 1); // Removes page from the list
         pages.total = this.total(); // Reset total number of pages
         Dots.update();
       },
@@ -466,7 +492,7 @@ if (!owd.GridManager) {
        * Saves the page state on the database
        */
       save: function(index) {
-        var dummy = function(){};
+        var dummy = function() {};
         owd.HomeState.save({
           id: index,
           apps: pages.list[index].getAppsList()
@@ -477,7 +503,7 @@ if (!owd.GridManager) {
        * Saves all pages state on the database
        */
       saveAll: function() {
-        var dummy = function(){};
+        var dummy = function() {};
         owd.HomeState.save(pages.list, dummy, dummy);
       },
 
@@ -516,7 +542,7 @@ if (!owd.GridManager) {
       getLast: function() {
         return pages.list[this.total() - 1];
       }
-    }
+    };
 
     /*
      * This module leads to dragging feature
@@ -565,7 +591,7 @@ if (!owd.GridManager) {
           // Right border
           this.isDropDisabled = true;
           var curPageObj = pageHelper.getCurrent();
-          if (pages.current < pages.total - 1  && !this.isTranslatingPages) {
+          if (pages.current < pages.total - 1 && !this.isTranslatingPages) {
             curPageObj.remove(draggableIcon);
             pageHelper.getNext().prependIcon(draggableIcon);
             goNext();
@@ -648,7 +674,7 @@ if (!owd.GridManager) {
           }
         }
       }
-    }
+    };
 
     var Dots = {
 
@@ -690,7 +716,7 @@ if (!owd.GridManager) {
         var dot = doc.createElement('img');
         dot.className = 'circle';
         dot.src = (on) ? this.DOT_ON : this.DOT_OFF;
-        this.list.push (dot);
+        this.list.push(dot);
         this.wrapper.appendChild(dot);
       },
 
@@ -712,7 +738,7 @@ if (!owd.GridManager) {
         }
       }
 
-    }
+    };
 
     owd.GridManager = {
 
@@ -788,13 +814,13 @@ if (!owd.GridManager) {
         var total = pages.total;
         var origin = app.origin.toString();
 
-        while(index < total) {
+        while (index < total) {
           var page = pages.list[index];
           if (page.getIcon(origin)) {
             page.remove(app);
             break;
           }
-          index++
+          index++;
         }
 
         checkEmptyPages();
@@ -820,6 +846,6 @@ if (!owd.GridManager) {
       isEditMode: function() {
         return wmode === 'edit';
       }
-    }
+    };
   })(document);
 }
