@@ -12,7 +12,7 @@ body {
 #screen {
   width: 100%;
   height: -moz-calc(100% - 54px);
-  background-color:red;
+  background-color: white;
   position: absolute;
   top: 0;
 }
@@ -24,21 +24,26 @@ body {
   bottom: 0;
   height: 54px;
   width: 100%;
-  background: rgb(56, 59, 61);
 }
 
 #shortcuts .shortcut {
   float: left;
   width: 25%;
-  margin: 5px 0;
+  height: 54px;
   text-align: center;
+  background: rgb(56, 59, 61);
 }
 
-#shortcuts .shortcut img {
+#shortcuts .shortcutEnabled {
+  float: left;
+  width: 25%;
+  height: 54px;
+  text-align: center;
+  background: rgb(179, 179, 179);
+}
+
+#shortcuts img {
   display: block;
-  height: 79px;
-  height: 79px;
-  border-radius: 10px;
   margin: 10px auto 15px auto;
 }
 

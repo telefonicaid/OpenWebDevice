@@ -35,6 +35,9 @@ var CommsLauncher = {
     if (appName == 'Comms') {
       if (this.currentApp.hasOwnProperty('frame')) {
         this.currentApp.frame.className = 'hidden';
+        //Swap as well menu
+        this.swapMenu(this.currentApp.app.manifest.name, 'Comms');
+        this.currentApp = {};
       }
       return;
     }
@@ -65,10 +68,26 @@ var CommsLauncher = {
       frame.setAttribute('mozbrowser', 'true');
       frame.setAttribute('mozapp', appContainer.app.origin);
       frame.className = 'hidden'; //start hidden
+      //Perform the class swap after frame is loaded
+      //to prevent the flickering
+      var self = this;
+      frame.onload = function() {
+        self.swapCurrentApp(appContainer);
+      };
 
       appContainer.frame = frame;
       document.getElementById('screen').appendChild(appContainer.frame);
+    } else {
+      this.swapCurrentApp(appContainer);
     }
+    
+  },
+  
+  /**
+    Swaps two iframes to hide the current one is being showed
+    and show the new one
+  */
+  swapCurrentApp: function _swapCurrentApp(appContainer) {
     //Show the new app
     appContainer.frame.className = 'currentApp';
 
@@ -76,9 +95,26 @@ var CommsLauncher = {
     if (this.currentApp.hasOwnProperty('frame')) {
       this.currentApp.frame.className = 'hidden';
     }
+    
+    //Highlight, unhiglihg
+    //TODO: Hack for checking the comms app
+    var offName = !this.currentApp.hasOwnProperty('frame') ? 'Comms' : this.currentApp.app.manifest.name;
+    this.swapMenu(offName, appContainer.app.manifest.name);
 
     //Current is the new one
-    this.currentApp = this.apps[appName];
+    this.currentApp = appContainer;
+    
+  },
+  
+  /**
+    Enables/Disables buttons in the launcher, based on the 
+    app names.
+    
+    (That match the dom via ids)
+  */
+  swapMenu: function _swapMenu(offId, onId) {
+    document.getElementById(offId).className = 'shortcut';
+    document.getElementById(onId).className = 'shortcutEnabled';
   },
 
   /**
