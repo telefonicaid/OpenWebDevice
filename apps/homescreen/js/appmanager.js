@@ -54,6 +54,14 @@ if(typeof owdAppManager === 'undefined') {
     });
   };
   
+  document.documentElement.lang = 'en-US';
+  
+  SettingsListener.getPropertyValue('language.current', function(lang) {
+    if (lang && lang.length > 0) {
+      document.documentElement.lang = lang;
+    }
+  });
+  
   /*
    * Returns all installed applications
    */
@@ -170,22 +178,14 @@ if(typeof owdAppManager === 'undefined') {
     var manifest = this.getManifest(origin);
     
     if (manifest) {
-      ret = manifest.targetName;
+      ret = manifest.name;
       
-      if (!ret) {
-        // Not chached
-        ret = manifest.name;
-      
-        var locales = manifest.locales;
-        var mozL10n = document.mozL10n;
-        if (locales && mozL10n) {
-          var locale = locales[mozL10n.language.code]
-          if (locale && locale.name) {
-            ret = locale.name;
-          }
+      var locales = manifest.locales;
+      if (locales) {
+        var locale = locales[document.documentElement.lang]
+        if (locale && locale.name) {
+          ret = locale.name;
         }
-        
-        manifest.targetName = ret;
       }
     }
     

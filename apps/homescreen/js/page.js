@@ -76,7 +76,7 @@ if (!owd.Icon) {
       }
 
       // Label
-      var label = document.createElement('span');
+      var label = this.label = document.createElement('span');
       label.textContent = name;
       figure.appendChild(label);
 
@@ -103,6 +103,14 @@ if (!owd.Icon) {
     */
     getListItem: function() {
       return this.listItem;
+    },
+
+   /*
+    * Translates the label of the icons
+    */
+    translate: function() {
+      var desc = this.descriptor;
+      this.label.textContent = desc.name = owdAppManager.getName(desc.origin);
     },
 
    /*
@@ -368,6 +376,16 @@ if (!owd.Page) {
     */
     getNumApps: function() {
       return this.olist.childNodes.length;
+    },
+
+   /*
+    * Translates the label of the icons
+    */
+    translate: function(lang) {
+      var licons = this.licons;
+      for (var origin in licons) {
+        licons[origin].translate(lang);
+      }
     },
 
    /*

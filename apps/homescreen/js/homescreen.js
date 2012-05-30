@@ -17,9 +17,13 @@ if (!owd.Homescreen) {
   (function(doc) {
     'use strict';
 
+    const HOMESCREEN_TEF = owdConfig.homescreen === 'TEF';
+    
     // Initializating the components: strip & grid
-    owdStrip.ui.init();
-
+    if (HOMESCREEN_TEF) {
+      owdStrip.ui.init();
+    }
+    
     owd.GridManager.init('.apps', '.dots');
 
     // Listening for keys
@@ -49,17 +53,21 @@ if (!owd.Homescreen) {
        */
       showContextualMenu: function(origin) {
         // FIXME: localize this message
+        var options = [];
+        if (HOMESCREEN_TEF) {
+          options.push({
+            label: 'Add to carousel',
+            id: 'add'
+          });
+        } 
+        options.push({
+          label: 'Delete App',
+          id: 'delete'
+        });
+        
         var data = {
           origin: origin,
-          options: [
-            {
-              label: 'Add to carousel',
-              id: 'add'
-            },{
-              label: 'Delete App',
-              id: 'delete'
-            }
-          ]
+          options: options
         };
 
         contextualMenu.show(data, function(action) {
@@ -94,10 +102,15 @@ if (!owd.Homescreen) {
        * @param {Object} The homescreen container
        */
       init: function(container) {
-        container.addEventListener(startEvent, this);
         this.pages = container.getElementsByClassName('view');
         this.total = this.pages.length;
         this.currentPage = 0;
+        if (HOMESCREEN_TEF) {
+          container.addEventListener(startEvent, this);
+        } else {
+          // Go to grid screen
+          this.navigate(++this.currentPage, 0);
+        }
       },
 
       /*
