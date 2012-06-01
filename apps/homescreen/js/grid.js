@@ -22,7 +22,7 @@ if (!owd.GridManager) {
     var container, counter, pages, startEvent = 'mousedown',
         moveEvent = 'mousemove', endEvent = 'mouseup', elementTarget, iniPosX, curPosX,
         winInnerWidth = window.innerWidth, threshold = window.innerWidth / 3,
-        tapHoldTimeout = 400, tapHoldTimer, status, draggableIcon, draggableIconOrigin,
+        tapHoldTimeout = 200, tapHoldTimer, status, draggableIcon, draggableIconOrigin,
         limits, canceledTapHoldObserver = false, wmode, px = 'px';
 
     /*
@@ -151,6 +151,7 @@ if (!owd.GridManager) {
      * @param{Object} Event object
      */
     function onStartEvent(evt) {
+      container.dataset.transitioning = true;
       evt.stopPropagation();
       canceledTapHoldObserver = false;
       addTapHoldObserver(evt);
@@ -288,6 +289,9 @@ if (!owd.GridManager) {
           keepPosition();
         }
       }
+      setTimeout(function() {
+        delete container.dataset.transitioning;
+      }, 200);
     }
 
     /*
@@ -837,6 +841,9 @@ if (!owd.GridManager) {
           // Save current state after edit mode
           pageHelper.saveAll();
         }
+        
+        this.onEditModeChange(mode);
+        
         container.dataset.mode = wmode = mode;
       },
 

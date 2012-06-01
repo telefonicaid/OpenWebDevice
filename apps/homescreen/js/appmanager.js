@@ -25,7 +25,9 @@ if(typeof owdAppManager === 'undefined') {
   
   var nonInstalledApps = ['http://system.gaiamobile.org',
                           'http://homescreen.gaiamobile.org',
-                          'http://homescreentef.gaiamobile.org'];
+                          'http://test-agent.gaiamobile.org',
+                          'http://uitest.gaiamobile.org',
+                          'http://keyboard.gaiamobile.org'];
 
   navigator.mozApps.mgmt.getAll().onsuccess = function(e) {
       var apps = e.target.result;
