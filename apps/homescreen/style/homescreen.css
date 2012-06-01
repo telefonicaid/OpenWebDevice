@@ -6,7 +6,6 @@ html, body {
   border: none;
   overflow: hidden;
   font-size: 10px;
-  background-color: #8abbd7;
 }
 
 html {
@@ -39,7 +38,7 @@ section,footer,nav,a,img {
 
 #icongrid {
   -moz-transform: translateX(100%);
-  background-color: #8abbd7;
+  background-image: url('../resources/images/background.png');
   z-index: 2;
 }
 
@@ -53,6 +52,10 @@ section,footer,nav,a,img {
   z-index: 10000;
   background-color: black;
   text-align: center;
+}
+
+#footer[data-mode = 'edit'] .dock > li {
+  opacity: 0.2;
 }
 
 .dock {

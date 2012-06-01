@@ -91,6 +91,7 @@ if (!owd.Icon) {
       // Options button
       var options = document.createElement('span');
       options.className = 'options';
+      options.dataset.origin = origin;
       shader.appendChild(options);
 
       listItem.dataset.origin = origin;
@@ -290,16 +291,13 @@ if (!owd.Page) {
     * @param{Object} DOM element
     */
     tap: function(elem) {
-
-      window.console.log('OWD: Tapped',Date.now());
-
-      var dataset2 = elem.dataset;
-      if (dataset2 && typeof dataset2.origin !== 'undefined') {
-        if (owd.GridManager.isEditMode()) {
-          owd.Homescreen.showContextualMenu(dataset2.origin);
-        } else {
-          owdAppManager.launch(dataset2.origin);
+      var dataset = elem.dataset;
+      if (owd.GridManager.isEditMode()) {
+        if (elem.className === 'options') {
+          owd.Homescreen.showContextualMenu(dataset.origin);
         }
+      } else if ('origin' in dataset) {
+        owdAppManager.getByOrigin(dataset.origin).launch();
       }
     },
 
