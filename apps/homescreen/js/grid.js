@@ -22,7 +22,7 @@ if (!owd.GridManager) {
     var container, counter, pages, startEvent = 'mousedown',
         moveEvent = 'mousemove', endEvent = 'mouseup', elementTarget, iniPosX, curPosX,
         winInnerWidth = window.innerWidth, threshold = window.innerWidth / 3,
-        tapHoldTimeout = 200, tapHoldTimer, status, draggableIcon, draggableIconOrigin,
+        tapHoldTimeout = 400, tapHoldTimer, status, draggableIcon, draggableIconOrigin,
         limits, canceledTapHoldObserver = false, wmode, px = 'px';
 
     /*
@@ -101,48 +101,46 @@ if (!owd.GridManager) {
      * This method is in charge of keeping the position of the
      * current page when the swipe is not enough for paginating
      */
-    function keepPosition() {
-      if (status.iCoords.x !== status.cCoords.x) {
+    function keepPosition(transEndCallbck) {
+      var ix = status.iCoords.x;
+      var cx = status.cCoords.x;
+      if (ix !== cx) {
         var currentPage = pages.current;
 
-        pageHelper.getCurrent().moveToCenter();
-
-        if (currentPage > 0) {
+        if (ix < cx && currentPage > 0) {
           pageHelper.getPrevious().moveToLeft();
-        }
-
-        if (currentPage < pages.total - 1) {
+        } else if (ix > cx && currentPage < pages.total - 1) {
           pageHelper.getNext().moveToRight();
         }
+
+        pageHelper.getCurrent().moveToCenter(transEndCallbck);
+      } else if (transEndCallbck) {
+        transEndCallbck();
       }
     }
 
     /*
      * Navigates to next page
      */
-    function goNext() {
-      setTimeout(function() {
-        var nextPage = pageHelper.getNext();
-        var curPage = pageHelper.getCurrent();
-        curPage.moveToLeft();
-        nextPage.moveToCenter();
-        pages.current++;
-        Dots.update();
-      }, 0);
+    function goNext(transEndCallbck) {
+      var nextPage = pageHelper.getNext();
+      var curPage = pageHelper.getCurrent();
+      curPage.moveToLeft();
+      nextPage.moveToCenter(transEndCallbck);
+      pages.current++;
+      Dots.update();
     }
 
     /*
      * Navigates to previous page
      */
-    function goPrev() {
-      setTimeout(function() {
-        var prevPage = pageHelper.getPrevious();
-        var curPage = pageHelper.getCurrent();
-        curPage.moveToRight();
-        prevPage.moveToCenter();
-        pages.current--;
-        Dots.update();
-      }, 0);
+    function goPrev(transEndCallbck) {
+      var prevPage = pageHelper.getPrevious();
+      var curPage = pageHelper.getCurrent();
+      curPage.moveToRight();
+      prevPage.moveToCenter(transEndCallbck);
+      pages.current--;
+      Dots.update();
     }
 
     /*
@@ -250,6 +248,10 @@ if (!owd.GridManager) {
       return Math.abs(difX) < thresholdForTapping;
     }
 
+    function onTransitionEnd() {
+      delete container.dataset.transitioning;
+    }
+
     /*
      * It handles touchend events, dragging and swiping
      *
@@ -265,6 +267,7 @@ if (!owd.GridManager) {
 
       if (dragger.dragging) {
         dragger.stop();
+        delete container.dataset.transitioning;
       } else {
         var difX = status.cCoords.x - status.iCoords.x;
         var absDifX = Math.abs(difX);
@@ -272,26 +275,24 @@ if (!owd.GridManager) {
           var currentPage = pages.current;
           if (difX < 0 && currentPage < pages.total - 1) {
             // Swipe from right to left
-            goNext();
+            goNext(onTransitionEnd);
           } else if (difX > 0 && currentPage > 0) {
             // Swipe from left to right
-            goPrev();
+            goPrev(onTransitionEnd);
           } else {
             // Bouncing effect for first or last page
-            keepPosition();
+            keepPosition(onTransitionEnd);
           }
         } else if (absDifX < thresholdForTapping) {
           pageHelper.getCurrent().tap(status.target);
-          // Sometime poor devices fire touchmove events when users are tapping
-          keepPosition();
+          // Sometime poor devices fire touchmove events when users are only
+          // tapping
+          keepPosition(onTransitionEnd);
         } else {
           // Keep position when the movement is less than the threshold
-          keepPosition();
+          keepPosition(onTransitionEnd);
         }
       }
-      setTimeout(function() {
-        delete container.dataset.transitioning;
-      }, 200);
     }
 
     /*
@@ -841,9 +842,9 @@ if (!owd.GridManager) {
           // Save current state after edit mode
           pageHelper.saveAll();
         }
-        
+
         this.onEditModeChange(mode);
-        
+
         container.dataset.mode = wmode = mode;
       },
 
