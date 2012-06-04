@@ -48,55 +48,51 @@
     padding-bottom: 5%;
   }
 
-  /* Maximum 16 icons for page */
-  .apps ol > li:nth-child(17) {
-    display: none;
-  }
+    /* Maximum 16 icons for page */
+    .apps ol > li:nth-child(17) {
+      display: none;
+    }
 
-  .apps ol > li div {
-    height: 100%;
-    width: 100%;
-  }
+    /* Option to delete apps */
+    .apps ol > li span.options {
+      position: absolute;
+      top: -10%;
+      left: 0;
+      width: 100%;
+      height: 33%;
+      z-index: 2;
+      background: url(../resources/images/menu.png) no-repeat center top;
+    }
 
-  .apps ol > li div.icon {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-  }
+    /* Container -> icon + label */
+    .apps ol > li > div {
+      height: 100%;
+      width: 100%;
+      pointer-events: none; /* NO touchable area */
+    }
 
-  .apps ol > li span.options {
-    position: relative;
-    top: -10%;
-    left: 0;
-    width: 100%;
-    height: 33%;
-    z-index: 2;
-    background: url(../resources/images/menu.png) no-repeat center top;
-  }
+      /* icon */
+      .apps ol > li > div > img {
+        margin-bottom: 1%;
+      }
 
-  /* icon */
-  .apps img {
-  /*max-width: 100%;
-    width: 6rem;
-    border: 2px solid #585858;
-    border-radius: 50%;
-    box-shadow: 0 5px 5px -5px black; */
-    margin-bottom: 1%;
-  }
+      /* label */
+      .apps ol > li > div > span {
+        font-size: 1.4rem;
+        white-space: nowrap;
+        text-overflow: clip;
+        overflow: hidden;
+      }
 
-  /* label */
-  .apps span {
+  /* Defining this class we can share styles between the icon
+    and dragabble labels */
+  .label {
     text-transform: capitalize;
-    font-size: 1.4rem;
     font-weight: bold;
     color: #fff;
     width: 95%;
     margin: 0 auto;
-    white-space: nowrap;
-    text-overflow: clip;
     display: block;
-    overflow: hidden;
   }
 
   .apps .draggable {
@@ -108,18 +104,20 @@
     -moz-transform: translate(0,0);
   }
 
-  .apps .draggable img {
-    box-shadow: 0 0 5px 5px #666;
-    border-radius: 50%;
-  }
+    .apps .draggable img {
+      margin-bottom: 2%;
+      box-shadow: 0 0 5px 5px #666;
+      border-radius: 50%;
+      -moz-transform: scale(1.1);
+    }
 
-  .apps .draggable span {
-    font-size: 2rem;
-    white-space: normal;
-    text-overflow: visible;
-    overflow: visible;
-    text-shadow: 0 0 5px #666;
-  }
+    .apps .draggable span {
+      font-size: 2rem;
+      white-space: normal;
+      text-overflow: visible;
+      overflow: visible;
+      text-shadow: 0 0 5px #666;
+    }
 
   @-moz-keyframes shake {
     0% { -moz-transform: translate(3px, 2px) rotate(0deg); }
@@ -139,28 +137,30 @@
     0% { -moz-transform: rotate(0deg); }
     100% { -moz-transform: rotate(360deg); }
   }
-  
+
   @-moz-keyframes none {}
 
-  .apps[data-mode = 'edit'] ol > li div.figure {
+  /* Image and label have shaking effect */
+  /*.apps[data-mode = 'edit'] ol > li > div {
     -moz-animation-name: shake;
     -moz-animation-duration: 2s;
     -moz-transform-origin:50% 50%;
     -moz-animation-iteration-count: infinite;
     -moz-animation-timing-function: linear;
     opacity: .8;
-  }
+  }*/
 
-  /*.apps[data-mode = 'edit'] ol > li img {
+  /* We rotate only the image */
+  .apps[data-mode = 'edit'] ol > li > div > img {
     -moz-animation-name: rotation;
     -moz-animation-duration: 2s;
-    -moz-transform-origin:50% 50%;
+    -moz-transform-origin: 50% 50%;
     -moz-animation-iteration-count: infinite;
     -moz-animation-timing-function: linear;
     opacity: .8;
-  }*/
-  
-  .apps[data-transitioning] ol > li img, .apps[data-transitioning] ol > li div.figure {
+  }
+
+  .apps[data-transitioning] ol > li > div > img, .apps[data-transitioning] ol > li > div {
     -moz-animation-name: none;
   }
 

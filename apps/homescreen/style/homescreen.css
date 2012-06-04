@@ -39,6 +39,7 @@ section,footer,nav,a,img {
 #icongrid {
   -moz-transform: translateX(100%);
   background-image: url('../resources/images/background.png');
+  background-size: cover;
   z-index: 2;
 }
 
