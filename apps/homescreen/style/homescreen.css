@@ -46,62 +46,56 @@ section,footer,nav,a,img {
 
 #footer {
   height: 10%;
-  width:100%;
-  position:fixed;
+  width: 100%;
+  position: fixed;
   bottom: 0;
   z-index: 10000;
   background-color: black;
-  text-align: center;
 }
 
-#footer[data-mode = 'edit'] .dock > li {
-  opacity: 0.2;
-}
-
-.dock {
-  height: 100%;
-  width: 100%;
-  max-width: 32rem;
-  padding: 0;
-  margin: 0 auto;
-  list-style-type: none;
-}
-
- .dock > li {
-    height: 100%;
-    width: 25%;
-    display: inline-block;
-    float: left;
+  #footer[data-mode = 'edit'] .dock > li {
+    opacity: 0.2;
   }
 
-  .dock [class*="i-"] {
-    display: inline-block;
-    vertical-align: middle;
+  #footer nav {
+    height: 100%;
     width: 100%;
-    height: 100%;
-    font: 0/0 a;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: auto;
-    pointer-events: none;
   }
 
-.i-clock {
-  background-image: url('../resources/images/footer/1.png');
-}
+  #footer .dock {
+    height: 100%;
+    width: 100%;
+    max-width: 32rem;
+    padding: 0;
+    margin: 0 auto;
+    list-style: none;
+  }
 
-.i-contacts {
-  background-image: url('../resources/images/footer/2.png');
-}
+    #footer .dock > li {
+      height: 100%;
+      width: 25%;
+      float: left;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: auto;
+      font: 0/0 a;
+    }
 
-.i-messages {
-   background-image: url('../resources/images/footer/3.png');
-}
+    #footer .dock > li.i-logs {
+      background-image: url('../resources/images/footer/1.png');
+    }
 
-.i-phone {
-  margin: -1.1rem; /*TOFIX this hack*/
-  background-image: url('../resources/images/footer/4.png');
-}
+    #footer .dock > li.i-contacts {
+      background-image: url('../resources/images/footer/2.png');
+    }
+
+    #footer .dock > li.i-messages {
+      background-image: url('../resources/images/footer/3.png');
+    }
+
+    #footer .dock > li.i-phone {
+      background-image: url('../resources/images/footer/4.png');
+    }
 
 /* END footer */
 
@@ -121,9 +115,5 @@ button {
 @media screen and (min-device-width: 480px) {
   html {
     font-size: 15px;
-  }
-
-  .i-phone {
-    margin: -0.7rem; /*TOFIX this hack*/
   }
 }
