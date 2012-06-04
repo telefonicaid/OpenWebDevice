@@ -24,8 +24,16 @@ if (!owd.Homescreen) {
       owdStrip.ui.init();
     }
 
-    owd.GridManager.init('.apps', '.dots');
-
+    var grid = owd.GridManager;
+    
+    grid.init('.apps', '.dots');
+    
+    var mode = 'normal';
+    var footer = doc.querySelector('#footer');
+    grid.onEditModeChange = function (value) {
+      footer.dataset.mode = mode = value;
+    }
+    
     // Listening for keys
     window.addEventListener('keyup', function(e) {
       // Click on the Home button to reset the mode of the grid
@@ -45,11 +53,12 @@ if (!owd.Homescreen) {
     };
 
     // Listening for clicks on the footer
-    doc.querySelector('#footer').addEventListener('click', function(event) {
-      var dataset2 = event.target.dataset;
-      if (dataset2 && typeof dataset2.origin !== 'undefined') {
-        owdAppManager.launch(dataset2.origin);
-        console.log('Launching app from the dock: ' + dataset2.origin);
+    footer.addEventListener('click', function(event) {
+      if (mode === 'normal') {
+        var dataset2 = event.target.dataset;
+        if (dataset2 && typeof dataset2.origin !== 'undefined') {
+          owdAppManager.getByOrigin(dataset2.origin).launch();
+        }
       }
     });
 
@@ -62,7 +71,7 @@ if (!owd.Homescreen) {
        */
       showContextualMenu: function(origin) {
         // FIXME: localize this message
-        var options = [];
+        /*var options = [];
         if (HOMESCREEN_TEF) {
           options.push({
             label: 'Add to carousel',
@@ -93,7 +102,15 @@ if (!owd.Homescreen) {
               function() { }
             );
           }
-        });
+        });*/
+        var app = owdAppManager.getByOrigin(origin);
+        requestPermission(
+          'Do you want to uninstall ' + app.manifest.name + '?',
+          function() {
+            app.uninstall();
+          },
+          function() { }
+        );
       }
     };
 
