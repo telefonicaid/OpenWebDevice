@@ -35,7 +35,6 @@ if (!owd.Icon) {
 
   owd.Icon.prototype = {
 
-
    /*
     * Renders the icon into the page
     *
@@ -45,31 +44,27 @@ if (!owd.Icon) {
     */
     render: function(target, container) {
       /*
-       * <li dataset-origin="zzz">
+       * <li class="icon" dataset-origin="zzz">
        *   <div>
-       *    <img src="xxx"></img>
-       *    <span>yyy</span>
+       *     <img src="the icon image path"></img>
+       *     <span class="label">label</span>
        *   </div>
-       *   <div class="icon" dataset-origin="zzz">
-       *    <span class="options"></span>
-       *   </div>
+       *   <span class="options"></span>
        * </li>
        */
       this.dragabbleSection = container.parentNode;
 
       var listItem = this.listItem = document.createElement('li');
-
-      var name = this.descriptor.name;
-      var origin = this.descriptor.origin;
+      listItem.className = 'icon';
+      listItem.dataset.origin = this.descriptor.origin;
 
       // Icon container
-      var figure = this.figure = document.createElement('div');
-      figure.className = 'figure';
+      var icon = this.icon = document.createElement('div');
 
       // Image
       var img = document.createElement('img');
       img.src = this.descriptor.icon;
-      figure.appendChild(img);
+      icon.appendChild(img);
 
       img.onerror = function() {
         img.src = 'http://' + document.location.host + '/resources/images/Unknown.png';
@@ -77,24 +72,16 @@ if (!owd.Icon) {
 
       // Label
       var label = this.label = document.createElement('span');
-      label.textContent = name;
-      figure.appendChild(label);
+      label.className = 'label';
+      label.textContent = this.descriptor.name;
+      icon.appendChild(label);
 
-      listItem.appendChild(figure);
+      listItem.appendChild(icon);
 
-      // Touchable area
-      var shader = document.createElement('div');
-      shader.className = 'icon';
-      shader.dataset.origin = origin;
-      listItem.appendChild(shader);
-
-      // Options button
+      // Menu button to delete the app
       var options = document.createElement('span');
       options.className = 'options';
-      options.dataset.origin = origin;
-      shader.appendChild(options);
-
-      listItem.dataset.origin = origin;
+      listItem.appendChild(options);
 
       target.appendChild(listItem);
     },
@@ -125,7 +112,7 @@ if (!owd.Icon) {
       this.initX = x;
       this.initY = y;
 
-      var draggableElem = this.draggableElem = this.figure.cloneNode();
+      var draggableElem = this.draggableElem = this.icon.cloneNode();
       draggableElem.className = 'draggable';
 
       var li = this.listItem;
@@ -238,10 +225,17 @@ if (!owd.Page) {
    /*
     * Moves the page to the center of the screen
     */
-    moveToCenter: function() {
-      var style = this.container.style;
+    moveToCenter: function(onTransitionEnd) {
+      var cont = this.container;
+      var style = cont.style;
       style.MozTransform = 'translateX(0)';
       this.setTranstionDuration(style, 0.2);
+      if (onTransitionEnd) {
+        cont.addEventListener('transitionend', function ft(e) {
+          onTransitionEnd();
+          cont.removeEventListener('transitionend', ft);
+        });
+      }
     },
 
    /*
@@ -276,13 +270,13 @@ if (!owd.Page) {
     */
     drop: function(origin, target, dir) {
       var licons = this.licons;
-      if (dir < 0) {
-        // backwards
-        this.olist.insertBefore(licons[origin].getListItem(), licons[target].getListItem());
-      } else {
+      var onode = licons[origin].getListItem();
+      var tnode = licons[target].getListItem();
+      if (dir > 0) {
         // upwards
-        this.olist.insertBefore(licons[origin].getListItem(), licons[target].getListItem().nextSibling);
+        tnode = tnode.nextSibling;
       }
+      this.olist.insertBefore(onode, tnode);
     },
 
    /*
@@ -291,13 +285,13 @@ if (!owd.Page) {
     * @param{Object} DOM element
     */
     tap: function(elem) {
-      var dataset = elem.dataset;
       if (owd.GridManager.isEditMode()) {
         if (elem.className === 'options') {
-          owd.Homescreen.showContextualMenu(dataset.origin);
+          // <li> parent element defines the origin
+          owd.Homescreen.showContextualMenu(elem.parentNode.dataset.origin);
         }
-      } else if ('origin' in dataset) {
-        owdAppManager.getByOrigin(dataset.origin).launch();
+      } else if (elem.className === 'icon') {
+        owdAppManager.getByOrigin(elem.dataset.origin).launch();
       }
     },
 
