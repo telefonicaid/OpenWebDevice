@@ -71,10 +71,15 @@ if (!owd.Icon) {
       }
 
       // Label
+
+      // wrapper of the label -> overflow text should be centered in draggable mode
+      var wrapper = document.createElement('span');
+      wrapper.className = 'labelWrapper';
       var label = this.label = document.createElement('span');
-      label.className = 'label';
       label.textContent = this.descriptor.name;
-      icon.appendChild(label);
+      wrapper.appendChild(label);
+
+      icon.appendChild(wrapper);
 
       listItem.appendChild(icon);
 
@@ -205,12 +210,17 @@ if (!owd.Page) {
     },
 
    /*
+    * Duration of the transition defined in seconds
+    */
+    transitionDuration: 0.2,
+
+   /*
     * Moves the page to the right of the screen
     */
     moveToRight: function() {
       var style = this.container.style;
       style.MozTransform = 'translateX(100%)';
-      this.setTranstionDuration(style, 0.2);
+      this.setTranstionDuration(style, this.transitionDuration);
     },
 
    /*
@@ -219,7 +229,7 @@ if (!owd.Page) {
     moveToLeft: function() {
       var style = this.container.style;
       style.MozTransform = 'translateX(-100%)';
-      this.setTranstionDuration(style, 0.2);
+      this.setTranstionDuration(style, this.transitionDuration);
     },
 
    /*
@@ -229,7 +239,7 @@ if (!owd.Page) {
       var cont = this.container;
       var style = cont.style;
       style.MozTransform = 'translateX(0)';
-      this.setTranstionDuration(style, 0.2);
+      this.setTranstionDuration(style, this.transitionDuration);
       if (onTransitionEnd) {
         cont.addEventListener('transitionend', function ft(e) {
           onTransitionEnd();

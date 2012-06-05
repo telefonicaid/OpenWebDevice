@@ -21,7 +21,7 @@ if (!owd.GridManager) {
 
     var container, counter, pages, startEvent = 'mousedown',
         moveEvent = 'mousemove', endEvent = 'mouseup', elementTarget, iniPosX, curPosX,
-        winInnerWidth = window.innerWidth, threshold = window.innerWidth / 3,
+        winInnerWidth = window.innerWidth, threshold = window.innerWidth / 4,
         tapHoldTimeout = 400, tapHoldTimer, status, draggableIcon, draggableIconOrigin,
         limits, canceledTapHoldObserver = false, wmode, px = 'px';
 
