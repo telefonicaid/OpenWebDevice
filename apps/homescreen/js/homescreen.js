@@ -25,19 +25,20 @@ if (!owd.Homescreen) {
     }
 
     var grid = owd.GridManager;
-    
+
     grid.init('.apps', '.dots');
-    
+
     var mode = 'normal';
     var footer = doc.querySelector('#footer');
     grid.onEditModeChange = function (value) {
       footer.dataset.mode = mode = value;
     }
-    
+
     // Listening for keys
     window.addEventListener('keyup', function(e) {
       // Click on the Home button to reset the mode of the grid
       if (e.keyCode === e.DOM_VK_HOME) {
+        permission.destroy();
         owd.GridManager.setMode('normal');
       }
     }, true);
@@ -104,8 +105,8 @@ if (!owd.Homescreen) {
           }
         });*/
         var app = owdAppManager.getByOrigin(origin);
-        requestPermission(
-          'Do you want to uninstall ' + app.manifest.name + '?',
+        permission.request('Remove ' + app.manifest.name,
+          'This application will be uninstalled fully from your mobile',
           function() {
             app.uninstall();
           },
