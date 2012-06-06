@@ -76,23 +76,26 @@
         margin-bottom: 1%;
       }
 
-      /* label */
+      /* label wrapper */
       .apps ol > li > div > span {
-        font-size: 1.4rem;
-        white-space: nowrap;
-        text-overflow: clip;
-        overflow: hidden;
+        overflow: hidden; /* We cut the text to avoid messing up in the grid */
+        text-overflow: ellipsis; /* Ellipsis to represent clipped text */
       }
 
-  /* Defining this class we can share styles between the icon
-    and dragabble labels */
-  .label {
-    text-transform: capitalize;
-    font-weight: bold;
-    color: #fff;
-    width: 95%;
-    margin: 0 auto;
+        /* text label */
+        .apps ol > li > div > span > span {
+          font-size: 1.4rem;
+        }
+
+  .labelWrapper {
+    text-transform: capitalize; /* First letter always capitalized */
+    font-weight: bold; /* App label font weight */
+    color: #fff; /* App label color */
+    white-space: nowrap; /* NO new lines */
     display: block;
+    width: 95%; /* At least 5% of margin between labels of different apps */
+    position: relative;
+    margin: 0 auto;
   }
 
   .apps .draggable {
@@ -104,20 +107,26 @@
     -moz-transform: translate(0,0);
   }
 
-    .apps .draggable img {
-      margin-bottom: 2%;
+    .apps .draggable > img {
+      margin-bottom: 2.5%;
       box-shadow: 0 0 5px 5px #666;
-      border-radius: 50%;
+      border-radius: 50%; /* Box shadow around icon */
       -moz-transform: scale(1.1);
     }
 
-    .apps .draggable span {
-      font-size: 2rem;
-      white-space: normal;
-      text-overflow: visible;
-      overflow: visible;
-      text-shadow: 0 0 5px #666;
+    /* label wrapper */
+    .apps .draggable > span {
+      /* shift left edge of text to center */
+      left: 50%;
     }
+
+      /* text label */
+      .apps .draggable > span > span {
+        font-size: 2rem;
+        text-shadow: 0 0 5px #666;
+        /* shift left edge of text half distance to left */
+        margin-left: -100%;
+      }
 
   @-moz-keyframes shake {
     0% { -moz-transform: translate(3px, 2px) rotate(0deg); }
