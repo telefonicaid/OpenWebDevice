@@ -22,9 +22,26 @@ section,footer,nav,a,img {
   border:none;
 }
 
+#paginatioBar {
+  width: 100%;
+  height: .5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3;
+}
+
+  #paginatioBar > .paginationScroller {
+    width: 100%;
+    height: 100%;
+    background-color: #ff7f02;
+    -moz-transition: all 0.2s ease;
+    visibility: hidden;
+  }
+
 #content {
   width:100%;
-  height:90%;
+  height: 90%;
   overflow: hidden;
 }
 
@@ -32,7 +49,7 @@ section,footer,nav,a,img {
   width: 100%;
   height: 90%;
   position: fixed;
-  top:0;
+  top: 0;
   left: 0;
 }
 

@@ -1,26 +1,6 @@
-.main {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-}
-
-.dots {
-  width: 100%;
-  height: 6%;
-  text-align: center;
-}
-
-  .dots img {
-    display: inline-block;
-    border: 0;
-    margin: 0 .5%;
-    vertical-align: middle;
-  }
-
 .apps {
   width: 100%;
-  height: 94%;
+  height: 100%;
   overflow: hidden;
 }
 
