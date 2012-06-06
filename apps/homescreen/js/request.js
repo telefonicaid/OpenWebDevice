@@ -57,11 +57,6 @@ var permission = (function(doc) {
         yes.id = 'permission-yes';
         dialog.appendChild(yes);
 
-        setTimeout(function() {
-          // Put the dialog in the middle of the screen
-          dialog.style.marginTop = -dialog.offsetHeight / 2 + 'px';
-        }, 0);
-
         doc.body.appendChild(screen);
       }
 
@@ -80,11 +75,12 @@ var permission = (function(doc) {
       // Note plain text since this may include text from
       // untrusted app manifests, for example.
       title.textContent = tit;
-
       message.textContent = msg;
 
       // Make the screen visible
       screen.classList.add('visible');
+      // Put the dialog in the middle of the screen
+      dialog.style.marginTop = -dialog.offsetHeight / 2 + 'px';
 
       // This is the event listener function for the buttons
       function clickHandler(evt) {

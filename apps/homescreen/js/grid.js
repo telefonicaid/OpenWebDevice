@@ -128,7 +128,7 @@ if (!owd.GridManager) {
       curPage.moveToLeft();
       nextPage.moveToCenter(transEndCallbck);
       pages.current++;
-      Dots.update();
+      updatePaginationBar();
     }
 
     /*
@@ -140,7 +140,7 @@ if (!owd.GridManager) {
       curPage.moveToRight();
       prevPage.moveToCenter(transEndCallbck);
       pages.current--;
-      Dots.update();
+      updatePaginationBar();
     }
 
     /*
@@ -315,8 +315,8 @@ if (!owd.GridManager) {
         pageHelper.push(list, true);
       }
 
-      // Renders pagination dots
-      Dots.render();
+      // Renders pagination bar
+      updatePaginationBar(true);
 
       addLanguageListener();
 
@@ -338,7 +338,7 @@ if (!owd.GridManager) {
             renderFromMozApps();
           } else {
             // Grid was loaded from DB
-            Dots.render();
+            updatePaginationBar(true);
             addLanguageListener();
           }
         }, renderFromMozApps // Error recovering info about apps
@@ -386,6 +386,15 @@ if (!owd.GridManager) {
           break;
         }
         index++;
+      }
+    }
+
+    var pagBar = owd.PaginationBar;
+
+    function updatePaginationBar(show) {
+      pagBar.update(pages.current, pageHelper.total());
+      if (show) {
+        pagBar.show();
       }
     }
 
@@ -444,7 +453,7 @@ if (!owd.GridManager) {
        *
        * @param {Array} initial list of apps or icons
        */
-      push: function(lapps, notUpdateDots) {
+      push: function(lapps, notUpdatePagBar) {
         var index = this.total() + 1;
         var page = new owd.Page(index - 1);
         page.render(lapps, createPageMarkup());
@@ -455,8 +464,8 @@ if (!owd.GridManager) {
         }
         pages.list.push(page);
         pages.total = this.total();
-        if (!notUpdateDots) {
-          Dots.update();
+        if (!notUpdatePagBar) {
+          updatePaginationBar();
         }
       },
 
@@ -483,7 +492,7 @@ if (!owd.GridManager) {
         pages.list[index].destroy(); // Destroy page
         pages.list.splice(index, 1); // Removes page from the list
         pages.total = this.total(); // Reset total number of pages
-        Dots.update();
+        updatePaginationBar();
       },
 
       /*
@@ -681,70 +690,6 @@ if (!owd.GridManager) {
       }
     };
 
-    var Dots = {
-
-      /*
-       * List of dot elements
-       */
-      list: [],
-
-      DOT_ON: 'resources/images/pagination_on.png',
-
-      DOT_OFF: 'resources/images/pagination_off.png',
-
-      /*
-       * Initializes the component
-       *
-       * @param {Object} the container for the dots
-       */
-      init: function(container) {
-        this.wrapper = typeof container === 'object' ? container : doc.querySelector(container);
-        this.wrapper.style.lineHeight = this.wrapper.offsetHeight + 'px';
-      },
-
-      /*
-       * Renders all dots
-       */
-      render: function() {
-        var current = pages.current;
-        var total = pageHelper.total();
-        for (var i = 0; i < total; i++) {
-          this.createDot(i === current);
-        }
-
-      },
-
-      /*
-       * Creates a dot element
-       */
-      createDot: function(on) {
-        var dot = doc.createElement('img');
-        dot.className = 'circle';
-        dot.src = (on) ? this.DOT_ON : this.DOT_OFF;
-        this.list.push(dot);
-        this.wrapper.appendChild(dot);
-      },
-
-      /*
-       * Updates the pagination dots
-       */
-      update: function() {
-        var dots = this.wrapper.childNodes;
-        var total = pageHelper.total();
-        if (total < dots.length) {
-          var dot = this.list.pop();
-          this.wrapper.removeChild(dot);
-        } else if (total > dots.length) {
-          this.createDot(false);
-        }
-        var current = pages.current;
-        for (var i = 0; i < total; i++) {
-          this.list[i].src = (i === current) ? this.DOT_ON : this.DOT_OFF;
-        }
-      }
-
-    };
-
     owd.GridManager = {
 
       /*
@@ -752,12 +697,9 @@ if (!owd.GridManager) {
        *
        * @param {String} selector of the container for applications
        *
-       * @param {String} selector of the container for displaying the
-       *                 current page number and the total
        */
-      init: function(tApps, tCounter) {
+      init: function(tApps) {
         container = typeof tApps === 'object' ? tApps : doc.querySelector(tApps);
-        Dots.init(tCounter);
         render();
         container.addEventListener(startEvent, this, true);
         container.addEventListener('contextmenu', this);
