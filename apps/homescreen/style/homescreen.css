@@ -37,6 +37,7 @@ section,footer,nav,a,img {
     background-color: #ff7f02;
     -moz-transition: all 0.2s ease;
     visibility: hidden;
+    border-radius: .25rem;
   }
 
 #content {
@@ -55,7 +56,7 @@ section,footer,nav,a,img {
 
 #icongrid {
   -moz-transform: translateX(100%);
-  background-image: url('../resources/images/background.png');
+  background-image: url('../resources/images/background.jpg');
   background-size: cover;
   z-index: 2;
 }
