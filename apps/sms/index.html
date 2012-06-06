@@ -28,14 +28,12 @@
   <body class="hidden">
     <div id="view" class="panel">
       <div id="view-toolbar" class="toolbar toolbar-top">
-        <a href="#" id="view-back" class="button back-button">
-          <h2 data-l10n-id="messages">Messages</h2>
-          <div class="back-button-img"></div>
-        </a>
-        <h2 id="view-name">
-
-        </h2>
+        <a href="#" id="view-back" class="button text-button" data-l10n-id="back">Back</a>
+        <a href="#edit" id="view-edit-button" class="button text-button edit-hide" data-l10n-id="edit">Edit</a>
+        <a href="#" id="view-add-button" class="button text-button edit-hide" data-l10n-id="add-contact">Add</a>
+        <h2 id="view-name"></h2>
         <input type="tel" id="view-num" />
+        
       </div>
       <div id="view-list" class="list">
       </div>
@@ -63,14 +61,14 @@
       </div>
       <div id="msg-conversations-list" class="list">
       </div>
-      <div id="msg-undo-toolbar" class="toolbar">
+      <!-- <div id="msg-undo-toolbar" class="toolbar">
         <div id="msg-undo-title-container" data-l10n-id="conversationDeleted">Conversation deleted
         </div>
         <button id="msg-undo-button" class="button text-button" data-l10n-id="undo">Undo</button>
-      </div>
+      </div> -->
       <div id="msg-bottom-toolbar" class="toolbar toolbar-bottom edit-show">
         <div id="msg-new-message-container">
-          <button id="msg-deleteAll-button" class="button text-button edit-show"
+          <button id="msg-delete-all-button" class="button text-button edit-show"
                   data-l10n-id="delete-all">Delete all</button>
           <a href="#search" id="msg-search-button" class="button text-button edit-hide"
                   data-l10n-id="search">Search</a>
