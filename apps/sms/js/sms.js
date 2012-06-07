@@ -183,9 +183,6 @@ var ConversationListView = {
         }
 
         var fragment = '';
-        conversations.sort(function converstaionsSort(a, b) {
-          return a.timestamp > b.timestamp;
-        });
         for (var num in conversations) {
            if (self.delNumList.indexOf(num) > -1) {
              continue;
