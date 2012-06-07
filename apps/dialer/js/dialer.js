@@ -1,6 +1,6 @@
 'use strict';
 
-var kFontStep = 8;
+var kFontStep = 4;
 var kMinFontSize = 12;
 // Frequencies comming from http://en.wikipedia.org/wiki/Telephone_keypad
 var gTonesFrequencies = {
@@ -153,7 +153,9 @@ var KeyHandler = {
       div.innerHTML = text;
 
       var viewWidth = self.phoneNumberView.getBoundingClientRect().width;
+      console.log("viewWidth: " + viewWidth);
       var rect = div.getBoundingClientRect();
+      console.log("rect: " + rect.width);
       if (rect.width > viewWidth) {
         fontSize = Math.max(fontSize - kFontStep, kMinFontSize);
       } else if (fontSize < self._initialFontSize) {
@@ -169,6 +171,7 @@ var KeyHandler = {
     var view = this.phoneNumberView;
     var computedStyle = window.getComputedStyle(view, null);
     var fontSize = computedStyle.getPropertyValue('font-size');
+    console.log(fontSize);
     if (!this._initialFontSize) {
       this._initialFontSize = parseInt(fontSize);
     }
@@ -178,6 +181,7 @@ var KeyHandler = {
 
     var newFontSize =
       text ? getNextFontSize(parseInt(fontSize), text) : this._initialFontSize;
+      console.log(newFontSize);
     if (newFontSize != fontSize)
     view.style.fontSize = newFontSize + 'px';
   },
@@ -191,6 +195,9 @@ var KeyHandler = {
       switch (key) {
         case '0':
           self.phoneNumber.value = self.phoneNumber.value.slice(0, -1) + '+';
+          break;
+        case '*':
+          self.phoneNumber.value = self.phoneNumber.value.slice(0, -1) + '#';
           break;
         case 'del':
           self.phoneNumber.value = '';
@@ -307,7 +314,7 @@ var CallHandler = {
     if(this.callScreen.classList.contains('incoming')) {
       this.callScreen.classList.remove('incoming');
       callDirectionChar = "&#8618";
-    }
+    } else 
     if(this.callScreen.classList.contains('calling')) {
       this.callScreen.classList.remove('calling');
       callDirectionChar = "&#8617";
@@ -444,7 +451,9 @@ var CallHandler = {
   },
   get keypadView() {
     delete this.keypadView;
-    return this.keypadView = document.getElementById('mainKeyset');
+    // return this.keypadView = document.getElementById('mainKeyset');
+    return this.keypadView = document.getElementById('kb-keypad');
+
   },
 
   execute: function ch_execute(action) {
