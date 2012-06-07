@@ -64,11 +64,6 @@ html * {
   src: url('fonts/Keyboard-Symbols.woff');
 }
 
-/*
-  TODO Falta aÃ±adir la clase del botÃ³n de "borrar" a partir de esta URL
-  https://github.com/OWD-team/gaia/blob/keyboard-design/apps/keyboard/style/keyboard.css
-*/
-
 .phone-number-font{
   font-size:18pt;
   color:white;
