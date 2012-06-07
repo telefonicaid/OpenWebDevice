@@ -282,6 +282,7 @@ var ConversationListView = {
   },
   
   executeAllMessagesDelete: function cl_executeAllMessagesDelete() {
+    //TODO implement
     console.log("*********** NUMLIST ANTES= "+this.delNumList.length);
     this.delNumList = // coger todos los mensajes existentes
     console.log("*********** NUMLIST DESPUES= "+this.delNumList.length);
