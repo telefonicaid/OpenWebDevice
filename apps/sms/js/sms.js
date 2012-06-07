@@ -65,41 +65,7 @@ var MessageManager = {
   },
 };
 
-/* DelayDeleteManager and execute the delete task when:
- * 1. A period of time without undo action.
- * 2. View status change.
- * 3. Other scenario...
- * Regist when delete action pending and unregist when delete execute or undo.
-*/
-var DelayDeleteManager = {
-  registDelayDelete: function dm_registDelayDelete(executeDelete) {
-    this.executeDelete = executeDelete;
-    //TODO: We may have timer to hide the undo toolbar automatically.
-    //window.setTimeout(executeMessageDelete, timer);
-    document.body.addEventListener('DOMAttrModified', this);
-  },
-  unregistDelayDelete: function dm_unregistDelayDelete() {
-    this.executeDelete = null;
-    //window.clearTimeout(executeMessageDelete, timer);
-    document.body.removeEventListener('DOMAttrModified', this);
-  },
-  onViewStatusChanged: function dm_onViewStatusChanged(evt) {
-    if (evt.attrName != 'class')
-      return;
 
-    // When ConversationListView entering other status.
-    if (!evt.prevValue && evt.newValue) {
-      this.executeDelete();
-    }
-  },  
-  handleEvent: function dm_handleEvent(evt) {
-    switch (evt.type) {
-      case 'DOMAttrModified':
-        this.onViewStatusChanged(evt);
-        break;      
-    }
-  },
-};
 
 var ConversationListView = {
   get view() {
@@ -116,20 +82,10 @@ var ConversationListView = {
     delete this.deleteButton;
     return this.deleteButton = document.getElementById('msg-delete-button');
   },
-
-  get undoButton() {
-    delete this.undoButton;
-    return this.undoButton = document.getElementById('msg-undo-button');
-  },
-
-  get undoToolbar() {
-    delete this.undoToolbar;
-    return this.undoToolbar = document.getElementById('msg-undo-toolbar');    
-  },
-
-  get undoTitleContainer() {
-    delete this.undoTitleContainer;
-    return this.undoTitleContainer = document.getElementById('msg-undo-title-container');    
+  
+  get deleteAllButton() {
+    delete this.deleteAllButton;
+    return this.deleteAllButton = document.getElementById('msg-delete-all-button');
   },
 
   init: function cl_init() {
@@ -140,10 +96,10 @@ var ConversationListView = {
     this.searchInput.addEventListener('keyup', this);
     this.searchInput.addEventListener('blur', this);
     this.deleteButton.addEventListener('mousedown', this);
-    this.undoButton.addEventListener('mousedown', this);
+    this.deleteAllButton.addEventListener('mousedown', this);
+    // this.undoButton.addEventListener('mousedown', this);
     this.view.addEventListener('click', this);
     window.addEventListener('hashchange', this);
-
     this.updateConversationList();
   },
 
@@ -307,9 +263,9 @@ var ConversationListView = {
 
       case 'mousedown':
         if (evt.currentTarget == this.deleteButton)
-          this.pendMessageDelete();
-        else if (evt.currentTarget == this.undoButton)
-          this.undoMessageDelete();
+          this.executeMessageDelete();
+         else if (evt.currentTarget == this.deleteAllButton)
+           this.executeAllMessagesDelete();
         break;
 
       case 'click':
@@ -320,37 +276,26 @@ var ConversationListView = {
     }
   },
   
-  /* Message delete scenario:
-   *  Delete button will only trigger pendMessageDelete and reflesh conversation list.
-   *  When list update, undo toolbar will be triggered when deleted item list exist.
-   *  And delayDelete will also regist when undo toolbar show up.
-   *  executeMessageDelete would be set for delayDelete regist.
-  */
-  pendMessageDelete: function cl_pendMessageDelete() {
-    if (this.delNumList.length > 0) {
-      this.updateConversationList();
-    }
-    window.location.hash = '#';
-  },
-
   executeMessageDelete: function cl_executeMessageDelete() {
-    DelayDeleteManager.unregistDelayDelete();
-    this.undoToolbar.classList.remove('show');
+    this.deleteMessages(this.delNumList);
+    this.delNumList = [];
+  },
+  
+  executeAllMessagesDelete: function cl_executeAllMessagesDelete() {
+    //TODO implement
+    console.log("*********** NUMLIST ANTES= "+this.delNumList.length);
+    this.delNumList = // coger todos los mensajes existentes
+    console.log("*********** NUMLIST DESPUES= "+this.delNumList.length);
+    // dialogo para borrar todo
     this.deleteMessages(this.delNumList);
     this.delNumList = [];
   },
 
-  undoMessageDelete: function cl_undoMessageDelete() {
-    DelayDeleteManager.unregistDelayDelete();
-    this.delNumList = [];
-    this.updateConversationList();
-    this.undoToolbar.classList.remove('show');
-  },  
 
   deleteMessages: function cl_deleteMessages(numberList) {
-    if (numberList == [])
+    if (numberList == undefined || numberList.length == 0)
       return;
-    
+
     var filter = new MozSmsFilter();
     filter.numbers = numberList;
     
@@ -361,14 +306,9 @@ var ConversationListView = {
       }
       MessageManager.deleteMessages(msgs, this.updateConversationList.bind(this));
     }.bind(this), filter);
+    
+    window.location.hash = '#';
   },  
-
-  showUndoToolbar: function cl_showUndoToolbar() {
-    var undoTitle = document.mozL10n.get('conversationDeleted');
-    this.undoTitleContainer.innerHTML = this.delNumList.length + ' ' + undoTitle;
-    this.undoToolbar.classList.add('show');
-    DelayDeleteManager.registDelayDelete(this.executeMessageDelete.bind(this));
-  },
 
   toggleSearchMode: function cl_toggleSearchMode(show) {
     if (show) {
@@ -565,6 +505,7 @@ var ConversationView = {
 
         var body = msg.body.replace(/\n/g, '<br />');
         fragment += '<div ' + className + ' ' + dataNum + ' ' + dataId + '>' +
+                      '<input type="checkbox" class="fake-checkbox"/>' + '<span></span>' +
                       '<div class="text">' + escapeHTML(body) + '</div>' +
                       '<div class="time" data-time="' + msg.timestamp.getTime() + '">' +
                           prettyDate(msg.timestamp) + '</div>' +
