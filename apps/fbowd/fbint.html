@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html manifest="manifest.appcache">
+  <head>
+    <meta charset="UTF-8">
+    <title>Facebook App</title>
+    <link href="common.css" rel="stylesheet">
+    <link href="style/fbint.css" rel="stylesheet">
+    <script defer src="templates.js"></script>
+  </head>
+
+  <body data-state='welcome'>
+    <header style="background:lightblue;float:left;width:100%">
+      <h1 style="float:left;margin:0;padding:0">Facebook Friends</h1>
+      <button style="float:left" type=button onclick="owdFbInt.ui.importAll(event)">Add to Contacts</button>
+      <button style="float:left" type=button onclick="owdFbInt.ui.logout()">Logout</button>
+    </header>
+
+    <section id="main">
+      <ol id="myFbContacts" class="itemSet" onclick="owdFbInt.ui.selection(event)">
+          <li data-template>
+            <article id="#uid#" class="altBorders contactEntry">
+              <dl>
+                <dd class="img">
+                  <img src="https://graph.facebook.com/#uid#/picture?type=square">
+                </dd>
+                <dt>#name#</dt>
+                <dd class="input"><input name="#_idx_#" type=checkbox></dd>
+              </dl>
+            </article>
+          </li>
+      </ol>
+    </section>
+
+    <section id="curtain">
+      <div>
+        <img src="style/throbber.gif">
+      </div>
+    </section>
+
+    <section id="welcome">
+      <div>
+        <button type=button onclick="owdFbInt.start()">Go To Facebook</button>
+      </div>
+    </section>
+
+    <script src="js/fbint.js"></script>
+  </body>
+</html>
