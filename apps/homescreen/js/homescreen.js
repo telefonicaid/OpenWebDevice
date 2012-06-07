@@ -105,14 +105,16 @@ if (!owd.Homescreen) {
             );
           }
         });*/
-        var app = owdAppManager.getByOrigin(origin);
-        permission.request('Remove ' + app.manifest.name,
-          'This application will be uninstalled fully from your mobile',
-          function() {
-            app.uninstall();
-          },
-          function() { }
-        );
+        if (!owdAppManager.isCore(origin)) {
+          var app = owdAppManager.getByOrigin(origin);
+          permission.request('Remove ' + app.manifest.name,
+            'This application will be uninstalled fully from your mobile',
+            function() {
+              app.uninstall();
+            },
+            function() { }
+          );
+        }
       }
     };
 
