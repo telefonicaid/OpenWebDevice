@@ -26,7 +26,8 @@ if (!owd.Homescreen) {
 
     var grid = owd.GridManager;
 
-    grid.init('.apps', '.dots');
+    owd.PaginationBar.init('.paginationScroller');
+    grid.init('.apps');
 
     var mode = 'normal';
     var footer = doc.querySelector('#footer');
