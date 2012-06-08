@@ -311,13 +311,26 @@ if (!owd.Page) {
     * @param{Object} icon object
     */
     prependIcon: function(icon) {
-      var len = this.olist.length;
-      if (len > 0) {
-        this.olist.insertBefore(icon.getListItem(), this.olist.firstChild);
+      var olist = this.olist;
+      if (olist.childNodes.length > 0) {
+        olist.insertBefore(icon.getListItem(), this.olist.firstChild);
       } else {
-        this.olist.appendChild(icon.getListItem());
+        olist.appendChild(icon.getListItem());
       }
       this.licons[icon.descriptor.origin] = icon;
+    },
+
+   /*
+    * Moves an icon to the first position
+    *
+    * @param{Object} icon object
+    */
+    moveIconToFirstChild: function(icon) {
+      var olist = this.olist;
+      if (olist.childNodes.length > 0) {
+        olist.insertBefore(icon.getListItem(), olist.firstChild);
+      }
+
     },
 
    /*

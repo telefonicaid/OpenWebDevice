@@ -579,6 +579,11 @@ if (!owd.GridManager) {
       isTranslatingPages: false,
 
       /*
+       * Translating timeout listener
+       */
+      translatingTimeout: null,
+
+      /*
        * Sets the isTranslatingPages variable
        *
        * @param {Boolean} the value
@@ -587,7 +592,10 @@ if (!owd.GridManager) {
         this.isTranslatingPages = value;
         if (value) {
           var that = this;
-          setTimeout(function() { that.isTranslatingPages = false; that.checkLimits()}, 1000);
+          that.translatingTimeout = setTimeout(function() {
+            that.isTranslatingPages = false;
+            that.checkLimits();
+          }, 1000);
         }
       },
 
@@ -647,6 +655,8 @@ if (!owd.GridManager) {
        * is empty
        */
       stop: function() {
+        clearTimeout(this.translatingTimeout);
+        this.isTranslatingPages = false;
         this.dragging = false;
         draggableIcon.onDragStop();
         // When the drag&drop is finished we need to check empty pages and overflows
