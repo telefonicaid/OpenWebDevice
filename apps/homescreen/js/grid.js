@@ -266,7 +266,7 @@ if (!owd.GridManager) {
       window.removeEventListener(endEvent, owd.GridManager);
 
       if (dragger.dragging) {
-        dragger.stop();
+        dragger.stop(evt.target);
         delete container.dataset.transitioning;
       } else {
         var difX = status.cCoords.x - status.iCoords.x;
@@ -579,6 +579,11 @@ if (!owd.GridManager) {
       isTranslatingPages: false,
 
       /*
+       * Translating timeout listener
+       */
+      translatingTimeout: null,
+
+      /*
        * Sets the isTranslatingPages variable
        *
        * @param {Boolean} the value
@@ -587,7 +592,22 @@ if (!owd.GridManager) {
         this.isTranslatingPages = value;
         if (value) {
           var that = this;
-          setTimeout(function() { that.isTranslatingPages = false; that.checkLimits()}, 1000);
+          that.translatingTimeout = setTimeout(function() {
+            that.isTranslatingPages = false;
+            that.checkLimits();
+          }, 1000);
+        }
+      },
+
+      /*
+       * Detects when the end-users move an icon to another page but they
+       * drop the icon on the edge. It should be placed as first child
+       *
+       * @param {Object} DOMElement behind draggable icon
+       */
+      checkDropOnTheEdge: function(overlapElem) {
+        if (overlapElem.className === 'page') {
+          pageHelper.getCurrent().moveIconToFirstChild(draggableIcon);
         }
       },
 
@@ -646,7 +666,10 @@ if (!owd.GridManager) {
        * there is overflow or not in a page and removes the last page when
        * is empty
        */
-      stop: function() {
+      stop: function(overlapElem) {
+        clearTimeout(this.translatingTimeout);
+        this.isTranslatingPages = false;
+        this.checkDropOnTheEdge(overlapElem);
         this.dragging = false;
         draggableIcon.onDragStop();
         // When the drag&drop is finished we need to check empty pages and overflows
