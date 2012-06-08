@@ -266,7 +266,7 @@ if (!owd.GridManager) {
       window.removeEventListener(endEvent, owd.GridManager);
 
       if (dragger.dragging) {
-        dragger.stop(evt.target);
+        dragger.stop();
         delete container.dataset.transitioning;
       } else {
         var difX = status.cCoords.x - status.iCoords.x;
@@ -600,18 +600,6 @@ if (!owd.GridManager) {
       },
 
       /*
-       * Detects when the end-users move an icon to another page but they
-       * drop the icon on the edge. It should be placed as first child
-       *
-       * @param {Object} DOMElement behind draggable icon
-       */
-      checkDropOnTheEdge: function(overlapElem) {
-        if (overlapElem.className === 'page') {
-          pageHelper.getCurrent().moveIconToFirstChild(draggableIcon);
-        }
-      },
-
-      /*
        * Detects when users are touching on the limits of a page during
        * the dragging. So we can change the current page and navigate
        * to prev/next page depending on the position.
@@ -666,10 +654,9 @@ if (!owd.GridManager) {
        * there is overflow or not in a page and removes the last page when
        * is empty
        */
-      stop: function(overlapElem) {
+      stop: function() {
         clearTimeout(this.translatingTimeout);
         this.isTranslatingPages = false;
-        this.checkDropOnTheEdge(overlapElem);
         this.dragging = false;
         draggableIcon.onDragStop();
         // When the drag&drop is finished we need to check empty pages and overflows
