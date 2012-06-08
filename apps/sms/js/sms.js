@@ -87,6 +87,16 @@ var ConversationListView = {
     delete this.deleteAllButton;
     return this.deleteAllButton = document.getElementById('msg-delete-all-button');
   },
+  
+  get cancelDialogButton() {
+    delete this.cancelDialogButton;
+    return this.cancelDialogButton = document.getElementById('cancel-button');
+  },
+  
+  get acceptDialogButton() {
+    delete this.acceptDialogButton;
+    return this.acceptDialogButton = document.getElementById('accept-button');
+  },
 
   init: function cl_init() {
     this.delNumList = [];
@@ -97,7 +107,8 @@ var ConversationListView = {
     this.searchInput.addEventListener('blur', this);
     this.deleteButton.addEventListener('mousedown', this);
     this.deleteAllButton.addEventListener('mousedown', this);
-    // this.undoButton.addEventListener('mousedown', this);
+    this.cancelDialogButton.addEventListener('mousedown', this);
+    this.acceptDialogButton.addEventListener('mousedown', this);
     this.view.addEventListener('click', this);
     window.addEventListener('hashchange', this);
     this.updateConversationList();
@@ -187,7 +198,7 @@ var ConversationListView = {
            ' data-name="' + escapeHTML(conversation.name || conversation.num, true) + '"' +
            ' data-notempty="' + (conversation.timestamp ? 'true' : '') + '"' +
            ' class="' + (conversation.hidden ? 'hide' : '') + '">' +
-           '<input type="checkbox" class="fake-checkbox"/>' + '<span></span>' +
+           '  <input type="checkbox" class="fake-checkbox"/>' + '<span></span>' +
            '  <div class="name">' + escapeHTML(conversation.name) + '</div>' +
            '  <div class="msg">' + escapeHTML(conversation.body.split('\n')[0]) + '</div>' +
            (conversation.timestamp ?
@@ -262,15 +273,26 @@ var ConversationListView = {
         break;
 
       case 'mousedown':
-        if (evt.currentTarget == this.deleteButton)
-          this.executeMessageDelete();
-         else if (evt.currentTarget == this.deleteAllButton)
-           this.executeAllMessagesDelete();
+        switch (evt.currentTarget){
+          case this.deleteButton: 
+            this.executeMessageDelete();
+            break;
+          case this.deleteAllButton:
+            this.showConfirmationDialog();
+            break;
+          case this.acceptDialogButton:
+            console.log("******** DIALOGO ACEPTADO");
+            this.executeAllMessagesDelete();
+            break;
+          case this.cancelDialogButton:
+            this.hideConfirmationDialog();
+            break;
+        }
         break;
 
       case 'click':
         // When Event listening target is this.view and clicked target has href entry.
-        if (evt.currentTarget == this.view && evt.target.href)
+        if (evt.currentTarget == this.view && evt.target.href) //TODO this is why is not working on single message view
           this.onListItemClicked(evt);
         break;
     }
@@ -281,16 +303,31 @@ var ConversationListView = {
     this.delNumList = [];
   },
   
+  /************************ WORKING ON IT ****************/
   executeAllMessagesDelete: function cl_executeAllMessagesDelete() {
-    //TODO implement
-    console.log("*********** NUMLIST ANTES= "+this.delNumList.length);
-    this.delNumList = // coger todos los mensajes existentes
-    console.log("*********** NUMLIST DESPUES= "+this.delNumList.length);
-    // dialogo para borrar todo
-    this.deleteMessages(this.delNumList);
+    // Clean current list in case messages checked
     this.delNumList = [];
+    
+    var inputElements_list = document.getElementById('msg-conversations-list').getElementsByTagName('a');
+    console.log("******************* Detectados "+inputElements_list.length+" elementos");
+    for (var i=0; i < inputElements_list.length; i++) {
+      console.log("******* Numero: "+inputElements_list[i].dataset.num);
+      this.delNumList.push(inputElements_list[i].dataset.num);
+    };
+    
+    this.executeMessageDelete();
+    this.hideConfirmationDialog();
   },
 
+  showConfirmationDialog: function cl_showConfirmationDialog() {
+    var bodyclassList = document.body.classList;
+    bodyclassList.add('confirmation-pending');
+  },
+  
+  hideConfirmationDialog: function cl_hideConfirmationDialog() {
+    var bodyclassList = document.body.classList;
+    bodyclassList.remove('confirmation-pending');
+  },
 
   deleteMessages: function cl_deleteMessages(numberList) {
     if (numberList == undefined || numberList.length == 0)

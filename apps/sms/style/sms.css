@@ -5,7 +5,7 @@ html, body {
   overflow-x: hidden;
   overflow-y: hidden;
   
-  font-size: 7.3px; /** 10px aiming at devices with 219dpi, change when needed */
+  font-size: 10px; /** 10px aiming at devices with 219dpi, 7.3px for 160dpi, change when needed */
 }
 
 body {
@@ -85,6 +85,7 @@ body.conversation #msg-conversations {
   width: 0%;
   -moz-transition: -moz-transform 0.3s ease, width 0s linear 0.5s;
 }
+
 
 .toolbar {
   -moz-box-sizing: border-box;
@@ -726,5 +727,40 @@ body.conversation-new-msg #view-num {
 /* localization */
 body.hidden *[data-l10n-id] {
   visibility: hidden;
+}
+
+#confirmation-panel {
+    text-align: center;
+    background: rgba(0,0,0,0.4);
+    -moz-transform: translateX(-100%);
+    -moz-transition: -moz-transform 0.3s ease, width 0s linear 0.5s;
+    width: 0rem;
+    z-index: 1;
+    
+}
+
+body.confirmation-pending #confirmation-panel {
+    -moz-transform: translateX(0);
+    -moz-transition: -moz-transform 0.3s ease;
+    width: 100%;
+    z-index: 10;
+}
+
+#confirmation-dialog {
+    background: rgb(255,255,255);
+    opacity: 1; 
+    border-radius: 0.8rem;
+    margin: 10rem 2rem 0rem;
+    display: block;
+    padding: 3rem 7rem;
+}
+#confirmation-dialog p {
+    font-size: 2rem;
+}
+#confirmation-dialog h2 {
+    font-size: 2rem;
+}
+#confirmation-dialog .button {
+    margin: 2rem 1.5rem 0rem;
 }
 
