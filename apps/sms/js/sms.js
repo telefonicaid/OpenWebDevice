@@ -568,14 +568,14 @@ var ConversationView = {
         var num = outgoing ? msg.receiver : msg.sender;
         var dataNum = 'data-num="' + num + '"';
 
-        var className = 'class="' + (outgoing ? 'receiver' : 'sender') + '"';
+        var className = (outgoing ? 'receiver' : 'sender') + '"';
         if (msg.delivery == 'sending')
-          className = 'class="receiver pending"';
+          className = 'receiver pending"';
 
         var pic = 'style/images/contact-placeholder.png';
 
         var body = msg.body.replace(/\n/g, '<br />');
-        fragment += '<div ' + className + ' ' + dataNum + ' ' + dataId + '>' +
+        fragment += '<div class="message ' + className + ' ' + dataNum + ' ' + dataId + '>' +
                       '<input type="checkbox" class="fake-checkbox"/>' + '<span></span>' +
                       '<div class="text">' + escapeHTML(body) + '</div>' +
                       '<div class="time" data-time="' + msg.timestamp.getTime() + '">' +
@@ -652,9 +652,9 @@ var ConversationView = {
         console.log("TARGET = "+evt.currentTarget);
         console.log("TIPO = "+evt.target.className);
         console.log("PADRE = "+evt.target.parentNode.className);
-        
-        // When Event listening target is this.view and clicked target has a fake-input child.
-        if (evt.currentTarget == this.view && (evt.target.parentNode.className == 'receiver' || evt.target.parentNode.className == 'sender')) {
+        console.log("message? = "+evt.target.className.indexOf('message'));
+        // When Event listening target is this.view and clicked target is a message.
+        if (evt.currentTarget == this.view && ~evt.target.className.indexOf('message')) {
           console.log("************ ON A LIST ITEM WITH SENDER/RECEIVER PARENT");
           this.onListItemClicked(evt);
         } else console.log("NOPE");
@@ -673,7 +673,7 @@ var ConversationView = {
   onListItemClicked: function cv_onListItemClicked(evt) {
     /********************/
     console.log("************ ITEM CLICKED");
-    var cb = evt.target.parentNode.getElementsByClassName('fake-checkbox')[0];
+    var cb = evt.target.getElementsByClassName('fake-checkbox')[0];
     if (!cb){
       console.log("************ NO FAKE CHECKBOXES INSIDE");
       return;
