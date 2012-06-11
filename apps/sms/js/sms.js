@@ -87,22 +87,6 @@ var ConversationListView = {
     delete this.deleteAllButton;
     return this.deleteAllButton = document.getElementById('msg-delete-all-button');
   },
-  
-
-  // get undoButton() {
-    // delete this.undoButton;
-    // return this.undoButton = document.getElementById('msg-undo-button');
-  // },
-
-  // get undoToolbar() {
-    // delete this.undoToolbar;
-    // return this.undoToolbar = document.getElementById('msg-undo-toolbar');    
-  // },
-
-  // get undoTitleContainer() {
-    // delete this.undoTitleContainer;
-    // return this.undoTitleContainer = document.getElementById('msg-undo-title-container');    
-  // },
 
   init: function cl_init() {
     this.delNumList = [];
@@ -292,25 +276,15 @@ var ConversationListView = {
     }
   },
   
-  /* Message delete scenario:
-   *  Delete button will only trigger pendMessageDelete and reflesh conversation list.
-   *  When list update, undo toolbar will be triggered when deleted item list exist.
-   *  And delayDelete will also regist when undo toolbar show up.
-   *  executeMessageDelete would be set for delayDelete regist.
-  */
-  // pendMessageDelete: function cl_pendMessageDelete() {
-    // if (this.delNumList.length > 0) {
-      // this.updateConversationList();
-    // }
-    // window.location.hash = '#';
-  // },
 
   executeMessageDelete: function cl_executeMessageDelete() {
+
     this.deleteMessages(this.delNumList);
     this.delNumList = [];
   },
   
   executeAllMessagesDelete: function cl_executeAllMessagesDelete() {
+
     console.log("*********** NUMLIST ANTES= "+this.delNumList.length);
     this.delNumList = // coger todos los mensajes existentes
     console.log("*********** NUMLIST DESPUES= "+this.delNumList.length);
@@ -318,13 +292,7 @@ var ConversationListView = {
     this.deleteMessages(this.delNumList);
     this.delNumList = [];
   },
-// 
-  // undoMessageDelete: function cl_undoMessageDelete() {
-    // //DelayDeleteManager.unregistDelayDelete();
-    // this.delNumList = [];
-    // this.updateConversationList();
-    // //this.undoToolbar.classList.remove('show');
-  // },  
+
 
   deleteMessages: function cl_deleteMessages(numberList) {
     if (numberList == undefined || numberList.length == 0)
@@ -343,13 +311,6 @@ var ConversationListView = {
     
     window.location.hash = '#';
   },  
-
-  // showUndoToolbar: function cl_showUndoToolbar() {
-    // var undoTitle = document.mozL10n.get('conversationDeleted');
-    // this.undoTitleContainer.innerHTML = this.delNumList.length + ' ' + undoTitle;
-    // this.undoToolbar.classList.add('show');
-    // //DelayDeleteManager.registDelayDelete(this.executeMessageDelete.bind(this));
-  // },
 
   toggleSearchMode: function cl_toggleSearchMode(show) {
     if (show) {

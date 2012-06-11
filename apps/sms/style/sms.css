@@ -388,24 +388,6 @@ body.msg-edit-mode #msg-conversations-list .time {
   right: 10.6rem;
 }
 
-/*#msg-undo-toolbar {
-  height: 8rem;
-  bottom: 8rem;
-  background: url("images/app-texture.png") repeat scroll 50% 50%, -moz-linear-gradient(center top , #000, #444) repeat scroll 0% 0% transparent;
-  visibility: hidden;
-}*/
-
-/*#msg-undo-toolbar.show {
-  visibility: visible;
-}*/
-
-/*#msg-undo-title-container {
-  text-align: center;
-  line-height: 8rem;
-  font-size: 1.6rem;
-  font-weight: bold;
-  color: white;
-}*/
 
 #msg-new-message-container {
   padding: 0;
@@ -690,6 +672,22 @@ body.conversation-new-msg #view-num {
   height: 6.4rem;
   border: none;
 }
+
+
+#view-list a > input.fake-checkbox {
+  display: none;
+}
+
+#view-list a > span {
+  position: absolute;
+  top: -moz-calc(50% - 3.4rem);
+  left: 2rem;
+  display: block;
+  width: 6.4rem;
+  height: 6.4rem;
+  border: none;
+}
+
 
 #view-list a > input[type=checkbox] + span {
   width: 6rem;
