@@ -86,6 +86,7 @@ var ConversationListView = {
   get deleteAllButton() {
     delete this.deleteAllButton;
     return this.deleteAllButton = document.getElementById('msg-delete-all-button');
+
   },
   
   get cancelDialogButton() {
@@ -96,6 +97,7 @@ var ConversationListView = {
   get acceptDialogButton() {
     delete this.acceptDialogButton;
     return this.acceptDialogButton = document.getElementById('accept-button');
+
   },
 
   init: function cl_init() {
@@ -107,8 +109,10 @@ var ConversationListView = {
     this.searchInput.addEventListener('blur', this);
     this.deleteButton.addEventListener('mousedown', this);
     this.deleteAllButton.addEventListener('mousedown', this);
+
     this.cancelDialogButton.addEventListener('mousedown', this);
     this.acceptDialogButton.addEventListener('mousedown', this);
+
     this.view.addEventListener('click', this);
     window.addEventListener('hashchange', this);
     this.updateConversationList();
@@ -298,12 +302,12 @@ var ConversationListView = {
     }
   },
   
+
   executeMessageDelete: function cl_executeMessageDelete() {
     this.deleteMessages(this.delNumList);
     this.delNumList = [];
   },
-  
-  /************************ WORKING ON IT ****************/
+
   executeAllMessagesDelete: function cl_executeAllMessagesDelete() {
     // Clean current list in case messages checked
     this.delNumList = [];
@@ -328,7 +332,7 @@ var ConversationListView = {
     var bodyclassList = document.body.classList;
     bodyclassList.remove('confirmation-pending');
   },
-
+  
   deleteMessages: function cl_deleteMessages(numberList) {
     if (numberList == undefined || numberList.length == 0)
       return;
