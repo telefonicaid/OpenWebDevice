@@ -566,6 +566,8 @@ body.conversation-new-msg #view-num {
   /* Remove the thumbnail for current stage.
    *padding need shit back to 9.6rem when social network integration is ready*/  
   padding-left: 1.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #view-list > div.receiver {
@@ -573,6 +575,8 @@ body.conversation-new-msg #view-num {
    *padding need shit back to 9.6rem when social network integration is ready*/  
   padding-right: 1.6rem;
   text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #view-list > div.pending {
@@ -620,6 +624,8 @@ body.conversation-new-msg #view-num {
   color: rgb(18, 47, 64);
   text-shadow: 0 0.1rem 0 #ddd;
   line-height: 3.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #view-list > div .time {
