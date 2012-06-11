@@ -14,7 +14,6 @@
  *
  *
  */
-
 if(typeof window.owdFbInt === 'undefined') {
   (function(document) {
     'use strict';
@@ -42,6 +41,13 @@ if(typeof window.owdFbInt === 'undefined') {
       // Query that retrieves the information about friends
       var FRIENDS_QUERY = 'SELECT uid,name,birthday_date,email FROM user\
                 WHERE uid in (SELECT uid1 FROM friend WHERE uid2=me()) ORDER BY name';
+
+      var selButton = document.querySelector('#selunsel');
+      var contactList = document.querySelector('#myFbContacts');
+
+      // Canvas used to obtain the idata url images
+      var canvas = document.createElement('canvas');
+      canvas.hidden = true;
 
     /**
      *  Initialization function it tries to find an access token
@@ -123,7 +129,7 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
-    owdFbInt.ui = {};
+    var UI = owdFbInt.ui = {};
 
     owdFbInt.ui.logout = function() {
       logout();
@@ -151,16 +157,80 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
+    /**
+     *  Invoked when the user selects all his friends
+     *
+     *
+     */
+    owdFbInt.ui.selectAll = function(e) {
+      window.console.log('Selecting all Contacts');
+
+      bulkSelection(true);
+
+      selButton.textContent = 'Unselect All';
+      selButton.onclick = UI.unSelectAll;
+    }
+
+    /**
+     *
+     *  Invoked when the user unselects all her contacts
+     *
+     */
+    owdFbInt.ui.unSelectAll = function(e)  {
+      window.console.log('Unselecting all the contacts');
+
+      bulkSelection(false);
+
+      selButton.textContent = 'Select All';
+      selButton.onclick = UI.selectAll;
+    }
+
+    /**
+     *  Makes a bulk selection of the contacts
+     *
+     *
+     */
+    function bulkSelection(value) {
+      window.console.log('Bulk Selection');
+
+      var list = document.querySelector('#myFbContacts').
+                              querySelectorAll('input[type="checkbox"]');
+
+      var total = list.length;
+
+      window.console.log('Total input: ',total);
+
+      for(var c = 0; c < total; c++) {
+        list[c].checked = value;
+
+        if(value === true) {
+          selectedContacts = myFriends.slice(0);
+        }
+        else {
+          selectedContacts = [];
+        }
+      }
+    }
+
+    /**
+     *  Performs Facebook logout
+     *
+     *
+     */
     function logout() {
       window.console.log('Logout');
       clearStorage();
 
       document.location =
               'https://m.facebook.com/logout.php?next=' +
-                  encodeURIComponent(getLocation() + "?logout=1") + '&access_token='
-              + accessToken;
+                  encodeURIComponent(getLocation() + "?logout=1")
+                  + '&access_token=' + accessToken;
     }
 
+    /**
+     *  Clears credential data stored locally
+     *
+     */
     function clearStorage() {
       window.localStorage.removeItem('access_token');
       window.localStorage.removeItem('expires');
@@ -189,6 +259,22 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
+    function getContactPhoto(uid) {
+      var contactImg = getContactImg(uid);
+
+      canvas.width = contactImg.width;
+      canvas.height = contactImg.height;
+
+      canvas.getContext('2d').drawImage(contactImg,0,0);
+
+      return canvas.toDataURL();
+    }
+
+    function getContactImg(uid) {
+      window.console.log('Uid to retrieve img for: ',uid);
+      return contactList.querySelector('#c' + uid + ' img');
+    }
+
     /**
      *  Imports all the selected contacts on the address book
      *
@@ -203,7 +289,10 @@ if(typeof window.owdFbInt === 'undefined') {
 
       selectedContacts.forEach(function(f) {
         var contact = new mozContact();
-        contact.init({ name: [f.name], bday:null, fbContact:true, sex:f.uid });
+        var photo = getContactPhoto(f.uid);
+
+        contact.init({ name: [f.name], bday:null, fbContact:true, sex:f.uid, photo: [photo] });
+
         var request = navigator.mozContacts.save(contact);
         request.onsuccess = function() {
           numResponses++;
@@ -226,6 +315,24 @@ if(typeof window.owdFbInt === 'undefined') {
             }
           }
         };
+
+/*
+        var storages = navigator.getDeviceStorage('pictures');
+
+        if(storages.length > 0) {
+          var stReq = storages[0].addNamed(contactImg,"fb/c" + f.uid);
+
+          stReq.onsuccess = function() {
+            window.console.log('FB Contact Image stored on DS',f.uid);
+          };
+
+          stReq.onerror = function() {
+            window.console.log('Error while writing FB Contact Image to DS',f.uid);
+          };
+        }
+        else {
+          window.console.log('No storage to add FB contacts');
+        } */
 
       });
     }
