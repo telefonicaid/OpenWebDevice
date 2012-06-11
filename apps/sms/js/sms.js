@@ -44,7 +44,7 @@ var MessageManager = {
 
     req.onerror = function onerror() {
       var msg = 'Message deleting error in the database. Error: ' + req.errorCode;
-      console.log(msg);      
+      console.log(msg);
       callback(null);
     };
   },
@@ -54,7 +54,7 @@ var MessageManager = {
     conversation list page will also update withot notification currently.
     May need more infomation for user that the messages were not
     removed completely.
-  */  
+  */
   deleteMessages: function mm_deleteMessages(list, callback) {
     if (list.length > 0) {
       this.deleteMessage(list.shift(), function(result) {
@@ -62,7 +62,7 @@ var MessageManager = {
       }.bind(this));
     } else
       callback();
-  },
+  }
 };
 
 
@@ -77,23 +77,23 @@ var ConversationListView = {
     delete this.searchInput;
     return this.searchInput = document.getElementById('msg-search');
   },
-  
+
   get deleteButton() {
     delete this.deleteButton;
     return this.deleteButton = document.getElementById('msg-delete-button');
   },
-  
+
   get deleteAllButton() {
     delete this.deleteAllButton;
     return this.deleteAllButton = document.getElementById('msg-delete-all-button');
 
   },
-  
+
   get cancelDialogButton() {
     delete this.cancelDialogButton;
     return this.cancelDialogButton = document.getElementById('cancel-button');
   },
-  
+
   get acceptDialogButton() {
     delete this.acceptDialogButton;
     return this.acceptDialogButton = document.getElementById('accept-button');
@@ -182,11 +182,30 @@ var ConversationListView = {
         }
 
         var fragment = '';
+        /*
+          Order by conversation timestamp not by the contact name.
+          We want new conversations in the top.
+        */
+        var orderedConversations = [];
         for (var num in conversations) {
-           if (self.delNumList.indexOf(num) > -1) {
-             continue;
-           }
-          var msg = self.createNewConversation(conversations[num]);
+          /*
+            Push an array containing [timestap, conversation]
+            so we can order the list by timestap.
+          */
+          orderedConversations.push([conversations[num].timestamp, 
+                                    conversations[num]]);
+        }
+        orderedConversations.sort(function(a,b) {
+          return b[0] - a[0];
+        });
+        //Now we have the ordered conversations
+        var conversation;
+        for (var i in orderedConversations) {
+          conversation = orderedConversations[i][1];
+          if (self.delNumList.indexOf(conversation.num) > -1) {
+            continue;
+          }
+          var msg = self.createNewConversation(conversation);
           fragment += msg;
         }
         self.view.innerHTML = fragment;
@@ -239,7 +258,7 @@ var ConversationListView = {
       } else {
         conversation.classList.remove('hide');
       }
-  } catch(e) {
+  } catch (e) {
       alert(conversation);
   }
     }
@@ -277,14 +296,15 @@ var ConversationListView = {
         break;
 
       case 'mousedown':
-        switch (evt.currentTarget){
-          case this.deleteButton: 
+        switch (evt.currentTarget) {
+          case this.deleteButton:
             this.executeMessageDelete();
             break;
           case this.deleteAllButton:
             this.showConfirmationDialog();
             break;
           case this.acceptDialogButton:
+
             this.executeAllMessagesDelete();
             break;
           case this.cancelDialogButton:
@@ -303,7 +323,7 @@ var ConversationListView = {
         break;
     }
   },
-  
+
 
   executeMessageDelete: function cl_executeMessageDelete() {
     this.deleteMessages(this.delNumList);
@@ -313,14 +333,14 @@ var ConversationListView = {
   executeAllMessagesDelete: function cl_executeAllMessagesDelete() {
     // Clean current list in case messages checked
     this.delNumList = [];
-    
+
     var inputElements_list = document.getElementById('msg-conversations-list').getElementsByTagName('a');
-    console.log("******************* Detectados "+inputElements_list.length+" elementos");
-    for (var i=0; i < inputElements_list.length; i++) {
-      console.log("******* Numero: "+inputElements_list[i].dataset.num);
+    console.log('******************* Detectados '+ inputElements_list.length + ' elementos');
+    for (var i = 0; i < inputElements_list.length; i++) {
+      console.log('******* Numero: '+ inputElements_list[i].dataset.num);
       this.delNumList.push(inputElements_list[i].dataset.num);
-    };
-    
+    }
+
     this.executeMessageDelete();
     this.hideConfirmationDialog();
   },
@@ -329,29 +349,29 @@ var ConversationListView = {
     var bodyclassList = document.body.classList;
     bodyclassList.add('confirmation-pending');
   },
-  
+
   hideConfirmationDialog: function cl_hideConfirmationDialog() {
     var bodyclassList = document.body.classList;
     bodyclassList.remove('confirmation-pending');
   },
-  
+
   deleteMessages: function cl_deleteMessages(numberList) {
     if (numberList == undefined || numberList.length == 0)
       return;
 
     var filter = new MozSmsFilter();
     filter.numbers = numberList;
-    
+
     MessageManager.getMessages(function mm_getMessages(messages) {
-      var msgs =[];
+      var msgs = [];
       for (var i = 0; i < messages.length; i++) {
         msgs.push(messages[i].id);
       }
       MessageManager.deleteMessages(msgs, this.updateConversationList.bind(this));
     }.bind(this), filter);
-    
+
     window.location.hash = '#';
-  },  
+  },
 
   toggleSearchMode: function cl_toggleSearchMode(show) {
     if (show) {
@@ -360,7 +380,7 @@ var ConversationListView = {
       document.body.classList.remove('msg-search-mode');
     }
   },
-  
+
   toggleEditMode: function cl_toggleEditMode(show) {
     if (show) {      
       document.body.classList.add('edit-mode');  
@@ -368,7 +388,7 @@ var ConversationListView = {
       document.body.classList.remove('edit-mode');
     }
   },
-  
+
   onListItemClicked: function cl_onListItemClicked(evt) {
     /********************/
     console.log("************ ITEM CLICKED");
@@ -377,11 +397,12 @@ var ConversationListView = {
       console.log("************ NO FAKE CHECKBOXES INSIDE");
       return;
     }
+
     if (!document.body.classList.contains('edit-mode')){
       console.log("************ NOT EDIT MODE");
       return;
     }
-    
+
     evt.preventDefault();
     cb.checked = !cb.checked;
     console.log("************ CHECKBOX CHANGE");
@@ -390,7 +411,7 @@ var ConversationListView = {
     } else {
       this.delNumList.splice(this.delNumList.indexOf(evt.target.dataset.num), 1);
     }
-  },
+  }
 };
 
 var ConversationView = {
