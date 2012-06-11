@@ -285,7 +285,6 @@ var ConversationListView = {
             this.showConfirmationDialog();
             break;
           case this.acceptDialogButton:
-            console.log("******** DIALOGO ACEPTADO");
             this.executeAllMessagesDelete();
             break;
           case this.cancelDialogButton:
@@ -295,9 +294,12 @@ var ConversationListView = {
         break;
 
       case 'click':
-        // When Event listening target is this.view and clicked target has href entry.
-        if (evt.currentTarget == this.view && evt.target.href) //TODO this is why is not working on single message view
+        console.log("************ CLICK EVENT TRIGGERED");
+        // When Event listening target is this.view and clicked target has a fake-input child.
+        if (evt.currentTarget == this.view && evt.target.href) { //getElementsByTagName('input')[0].className == 'fake-checkbox') {
+          console.log("************ ON A HREF ITEM");
           this.onListItemClicked(evt);
+        }
         break;
     }
   },
@@ -361,22 +363,28 @@ var ConversationListView = {
   
   toggleEditMode: function cl_toggleEditMode(show) {
     if (show) {      
-      document.body.classList.add('msg-edit-mode');  
+      document.body.classList.add('edit-mode');  
     } else {
-      document.body.classList.remove('msg-edit-mode');
+      document.body.classList.remove('edit-mode');
     }
   },
   
   onListItemClicked: function cl_onListItemClicked(evt) {
+    /********************/
+    console.log("************ ITEM CLICKED");
     var cb = evt.target.getElementsByClassName('fake-checkbox')[0];
-    if (!cb)
+    if (!cb){
+      console.log("************ NO FAKE CHECKBOXES INSIDE");
       return;
-    
-    if (!document.body.classList.contains('msg-edit-mode'))
+    }
+    if (!document.body.classList.contains('edit-mode')){
+      console.log("************ NOT EDIT MODE");
       return;
+    }
     
     evt.preventDefault();
     cb.checked = !cb.checked;
+    console.log("************ CHECKBOX CHANGE");
     if (cb.checked) {
       this.delNumList.push(evt.target.dataset.num);
     } else {
@@ -415,7 +423,8 @@ var ConversationView = {
       'mousedown', this.sendMessage.bind(this));
 
     this.input.addEventListener('input', this.updateInputHeight.bind(this));
-
+    this.view.addEventListener('click', this);
+ 
     var windowEvents = ['resize', 'keyup', 'transitionend', 'hashchange'];
     windowEvents.forEach((function(eventName) {
       window.addEventListener(eventName, this);
@@ -594,6 +603,8 @@ var ConversationView = {
         break;
 
       case 'hashchange':
+        this.toggleEditMode(window.location.hash == '#edit');
+        
         var num = this.getNumFromHash();
         if (!num) {
           this.filter = null;
@@ -602,7 +613,11 @@ var ConversationView = {
 
         this.showConversation(num);
         break;
-
+        /**/
+       // document.body.classList.remove('conversation');
+       // document.body.classList.remove('conversation-new-msg');
+        /**/
+       
       case 'resize':
         if (!document.body.classList.contains('conversation'))
           return;
@@ -610,8 +625,53 @@ var ConversationView = {
         this.updateInputHeight();
         this.scrollViewToBottom();
         break;
+        
+      case 'click':
+        console.log("************ CLICK EVENT TRIGGERED");
+        console.log("TARGET = "+evt.currentTarget);
+        console.log("TIPO = "+evt.target.className);
+        console.log("PADRE = "+evt.target.parentNode.className);
+        
+        // When Event listening target is this.view and clicked target has a fake-input child.
+        if (evt.currentTarget == this.view && (evt.target.parentNode.className == 'receiver' || evt.target.parentNode.className == 'sender')) {
+          console.log("************ ON A LIST ITEM WITH SENDER/RECEIVER PARENT");
+          this.onListItemClicked(evt);
+        } else console.log("NOPE");
+        break;
     }
   },
+  
+  toggleEditMode: function cv_toggleEditMode(show) {
+    if (show) {      
+      document.body.classList.add('edit-mode');  
+    } else {
+      document.body.classList.remove('edit-mode');
+    }
+  },
+  
+  onListItemClicked: function cv_onListItemClicked(evt) {
+    /********************/
+    console.log("************ ITEM CLICKED");
+    var cb = evt.target.parentNode.getElementsByClassName('fake-checkbox')[0];
+    if (!cb){
+      console.log("************ NO FAKE CHECKBOXES INSIDE");
+      return;
+    }
+    if (!document.body.classList.contains('edit-mode')){
+      console.log("************ NOT EDIT MODE");
+      return;
+    }
+    
+    evt.preventDefault();
+    cb.checked = !cb.checked;
+    console.log("************ CHECKBOX CHANGE");
+    if (cb.checked) {
+      this.delNumList.push(evt.target.dataset.num);
+    } else {
+      this.delNumList.splice(this.delNumList.indexOf(evt.target.dataset.num), 1);
+    }
+  },
+  
   close: function cv_close() {
     if (!document.body.classList.contains('conversation') && !window.location.hash)
       return false;

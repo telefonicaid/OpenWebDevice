@@ -273,7 +273,7 @@ body.msg-search-mode #msg-conversations-list {
   -moz-transition: -moz-transform 0.3s ease;
 }
 
-body.msg-edit-mode #msg-conversations-list > a {
+body.edit-mode #msg-conversations-list > a {
   -moz-transform: translateX(9rem);
 }
 
@@ -377,15 +377,15 @@ body.msg-edit-mode #msg-conversations-list > a {
   font-size: 1.8rem;
 }
 
-body.msg-edit-mode #msg-conversations-list .name {
+body.edit-mode #msg-conversations-list .name {
   width: -moz-calc(100% - 19rem);
 }
 
-body.msg-edit-mode #msg-conversations-list .msg {
+body.edit-mode #msg-conversations-list .msg {
   width: -moz-calc(100% - 9rem);
 }
 
-body.msg-edit-mode #msg-conversations-list .time {
+body.edit-mode #msg-conversations-list .time {
   right: 10.6rem;
 }
 
@@ -443,11 +443,11 @@ body.msg-edit-mode #msg-conversations-list .time {
   display: none;
 }
 
-body.msg-edit-mode .edit-hide {
+body.edit-mode .edit-hide {
   display: none;
 }
 
-body.msg-edit-mode .edit-show {
+body.edit-mode .edit-show {
   display: block;
 }
 
@@ -467,7 +467,7 @@ body.msg-edit-mode .edit-show {
 body.conversation-new-msg #view-edit-button {
   display: none;
 }
-body.msg-edit-mode #view-edit-button {
+body.edit-mode #view-edit-button {
   display: none;
 }
 
@@ -483,7 +483,7 @@ body.msg-edit-mode #view-edit-button {
 body.conversation-new-msg #view-add-button {
   display: block;
 }
-body.msg-edit-mode #view-add-button {
+body.edit-mode #view-add-button {
   display: none;
 }
 
@@ -659,25 +659,11 @@ body.conversation-new-msg #view-num {
   height: 100%;
 }
 
-#view-list a > input.fake-checkbox {
+#view-list div > input.fake-checkbox {
   display: none;
 }
 
-
-/* fake input boxes for checkboxes*/
-#view-list label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-#view-list a > input.fake-checkbox {
-  display: none;
-}
-
-#view-list a > span {
+#view-list div > span {
   position: absolute;
   top: -moz-calc(50% - 3.4rem);
   left: 2rem;
@@ -688,11 +674,11 @@ body.conversation-new-msg #view-num {
 }
 
 
-#view-list a > input.fake-checkbox {
+#view-list div > input.fake-checkbox {
   display: none;
 }
 
-#view-list a > span {
+#view-list div > span {
   position: absolute;
   top: -moz-calc(50% - 3.4rem);
   left: 2rem;
@@ -702,7 +688,7 @@ body.conversation-new-msg #view-num {
   border: none;
 }
 
-#view-list a > input[type=checkbox] + span {
+#view-list div > input[type=checkbox] + span {
   width: 6rem;
   height: 6rem;
   border: 0.4rem solid;
@@ -714,7 +700,7 @@ body.conversation-new-msg #view-num {
   background: -moz-linear-gradient(#eaeae4, #ffffff);
 }
 
-#view-list a > input[type=checkbox]:checked + span {
+#view-list div > input[type=checkbox]:checked + span {
   background: url("./images/checked.png") no-repeat scroll center center,
     -moz-linear-gradient(#ffffff, #eaeae4);
 }
