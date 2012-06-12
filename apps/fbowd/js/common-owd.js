@@ -13,9 +13,25 @@ function errorHandler(msg,url,lineNumber) {
 				str += msg;
 			}
 
-			window.console.log(str);
+			window.console.error(str);
 
 			return false;
 		}
 
-window.onerror = errorHandler;
+window.addEventListener('error',errorHandler);
+
+/*
+if(typeof window.owdRequest === 'undefined') {
+  var owr = window.owRequest = function() {
+
+  }
+
+  owr.prototype.continue = function() {
+
+  }
+}
+
+var task = new owdTask('ssss')
+
+contactsImporter.start();
+*/

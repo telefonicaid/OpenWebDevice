@@ -115,7 +115,10 @@ if(typeof window.owdFbInt === 'undefined') {
 
         myFriends = response.data;
 
-        owd.templates.append('#myFbContacts',myFriends);
+        // Only append the first 10 friends to avoid collapsing the browser
+        var pagedData = myFriends.slice(0,10);
+
+        owd.templates.append('#myFbContacts',pagedData);
 
         document.body.dataset.state = '';
       }
@@ -140,7 +143,7 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     owdFbInt.ui.importAll = function(e) {
-      window.console.log('Importing all the contacts');
+      window.console.log('Importing all the contacts',selectedContacts.length);
 
       if(selectedContacts.length > 0) {
         owdFbInt.importAll(function() {
@@ -167,6 +170,8 @@ if(typeof window.owdFbInt === 'undefined') {
 
       bulkSelection(true);
 
+      selectedContacts = myFriends.slice(0);
+
       selButton.textContent = 'Unselect All';
       selButton.onclick = UI.unSelectAll;
     }
@@ -183,6 +188,8 @@ if(typeof window.owdFbInt === 'undefined') {
 
       selButton.textContent = 'Select All';
       selButton.onclick = UI.selectAll;
+
+      selectedContacts = [];
     }
 
     /**
@@ -202,13 +209,6 @@ if(typeof window.owdFbInt === 'undefined') {
 
       for(var c = 0; c < total; c++) {
         list[c].checked = value;
-
-        if(value === true) {
-          selectedContacts = myFriends.slice(0);
-        }
-        else {
-          selectedContacts = [];
-        }
       }
     }
 
@@ -259,21 +259,124 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
-    function getContactPhoto(uid) {
-      var contactImg = getContactImg(uid);
+    function getContactPhoto(uid,cb) {
+      var contactImg = getContactImg(uid,function(contactImg) {
+        // Checking whether the image was actually loaded or not
+        if(contactImg !== null) {
+          canvas.width = contactImg.width;
+          canvas.height = contactImg.height;
 
-      canvas.width = contactImg.width;
-      canvas.height = contactImg.height;
+          canvas.getContext('2d').drawImage(contactImg,0,0);
 
-      canvas.getContext('2d').drawImage(contactImg,0,0);
-
-      return canvas.toDataURL();
+          cb(canvas.toDataURL());
+        }
+        else {
+          cb('');
+        }
+      });
     }
 
-    function getContactImg(uid) {
+    function getContactImg(uid,cb) {
       window.console.log('Uid to retrieve img for: ',uid);
-      return contactList.querySelector('#c' + uid + ' img');
+      var img = contactList.querySelector('#c' + uid + ' img');
+
+      // The contact was not previously loaded on the DOM
+      if(img === null) {
+        img = document.createElement('img');
+        img.src = 'https://graph.facebook.com/' + uid + '/picture?type=square';
+        // A timeout is setup just in case the photo is not loaded
+        var timeoutId = window.setTimeout(function() {
+                          img.onload = null; cb(null); img.src = ''; },5000);
+
+        img.onload = function() {
+          window.cancelTimeout(timeoutId);
+          cb(img);
+        }
+      }
+      else {
+        cb(img);
+      }
     }
+
+    /**
+     *   Implements a Contacts Importer which imports Contacts in chunk sizes
+     *
+     *
+     */
+    var ContactsImporter = function(contacts) {
+      this.contacts = contacts;
+
+      var chunkSize = 10;
+      var pointer = 0;
+      this.pending = contacts.length;
+
+      function importSlice() {
+        var cgroup = contacts.slice(pointer,pointer + chunkSize);
+          persistContactGroup(cgroup,function() {
+            pointer += chunkSize; this.pending -= chunkSize;
+            this.onsuccess(); }.bind(this) );
+      } // importSlice
+
+      this.continue = function() {
+        if(this.pending > 0) {
+          if(this.pending < chunkSize) {
+            var cgroup = contacts.slice(pointer,pointer + this.pending);
+            persistContactGroup(cgroup,function() { this.pending = 0;
+                                                        this.onsuccess(); }.bind(this) );
+          }
+          else {
+            (importSlice.bind(this))();
+          }
+        }
+      }
+
+      this.start = function() {
+        pointer = 0;
+        this.pending = contacts.length;
+        (importSlice.bind(this))();
+      }
+
+    function persistContactGroup(cgroup,doneCB) {
+      var numResponses = 0;
+      var totalContacts = cgroup.length;
+
+      window.console.log('Contacts to add: ',totalContacts);
+
+      cgroup.forEach(function(f) {
+        var contact = new mozContact();
+
+        var photo = getContactPhoto(f.uid,function(photo) {
+          // When photo is ready this code will be executed
+          contact.init({ name: [f.name], bday:null, fbContact:true, sex:f.uid,
+          photo: [photo] });
+          var request = navigator.mozContacts.save(contact);
+          request.onsuccess = function() {
+            numResponses++;
+            window.console.log('Contact added!!!',numResponses);
+
+            if(numResponses === totalContacts) {
+              if(typeof doneCB === 'function') {
+                doneCB();
+              }
+            }
+          };
+
+          request.onerror = function(e) {
+            numResponses++;
+            window.console.log('Contact Add error: ',numResponses);
+
+            if(numResponses === totalContacts) {
+              if(typeof doneCB === 'function') {
+                doneCB();
+              }
+            }
+          };
+
+        });  // getContactPhoto
+      }); //forEach
+    } // persistContactGroup
+  } //contactsImporter
+
 
     /**
      *  Imports all the selected contacts on the address book
@@ -282,59 +385,19 @@ if(typeof window.owdFbInt === 'undefined') {
     owdFbInt.importAll = function(importedCB) {
       document.body.dataset.state = 'waiting';
 
-      var numResponses = 0;
-      var totalContacts = selectedContacts.length;
+      var cImporter = new ContactsImporter(selectedContacts);
+      cImporter.onsuccess = function() {
+        window.console.log('On success invoked!!!');
 
-      window.console.log('Total Contacts to add:',totalContacts);
-
-      selectedContacts.forEach(function(f) {
-        var contact = new mozContact();
-        var photo = getContactPhoto(f.uid);
-
-        contact.init({ name: [f.name], bday:null, fbContact:true, sex:f.uid, photo: [photo] });
-
-        var request = navigator.mozContacts.save(contact);
-        request.onsuccess = function() {
-          numResponses++;
-          window.console.log('Contact added!!!',numResponses);
-
-          if(numResponses === totalContacts) {
-            if(typeof importedCB === 'function') {
-              importedCB();
-            }
-          }
-        };
-
-        request.onerror = function(e) {
-          numResponses++;
-          window.console.log('Contact Add error: ',numResponses);
-
-          if(numResponses === totalContacts) {
-            if(typeof importedCB === 'function') {
-              importedCB();
-            }
-          }
-        };
-
-/*
-        var storages = navigator.getDeviceStorage('pictures');
-
-        if(storages.length > 0) {
-          var stReq = storages[0].addNamed(contactImg,"fb/c" + f.uid);
-
-          stReq.onsuccess = function() {
-            window.console.log('FB Contact Image stored on DS',f.uid);
-          };
-
-          stReq.onerror = function() {
-            window.console.log('Error while writing FB Contact Image to DS',f.uid);
-          };
+        if(cImporter.pending > 0) {
+          cImporter.continue();
         }
         else {
-          window.console.log('No storage to add FB contacts');
-        } */
+          importedCB();
+        }
+      };
 
-      });
+      cImporter.start();
     }
 
     /**
