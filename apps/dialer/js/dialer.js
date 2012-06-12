@@ -153,9 +153,7 @@ var KeyHandler = {
       div.innerHTML = text;
 
       var viewWidth = self.phoneNumberView.getBoundingClientRect().width;
-      console.log("viewWidth: " + viewWidth);
       var rect = div.getBoundingClientRect();
-      console.log("rect: " + rect.width);
       if (rect.width > viewWidth) {
         fontSize = Math.max(fontSize - kFontStep, kMinFontSize);
       } else if (fontSize < self._initialFontSize) {
@@ -171,7 +169,6 @@ var KeyHandler = {
     var view = this.phoneNumberView;
     var computedStyle = window.getComputedStyle(view, null);
     var fontSize = computedStyle.getPropertyValue('font-size');
-    console.log(fontSize);
     if (!this._initialFontSize) {
       this._initialFontSize = parseInt(fontSize);
     }
@@ -181,7 +178,6 @@ var KeyHandler = {
 
     var newFontSize =
       text ? getNextFontSize(parseInt(fontSize), text) : this._initialFontSize;
-      console.log(newFontSize);
     if (newFontSize != fontSize)
     view.style.fontSize = newFontSize + 'px';
   },
@@ -251,6 +247,10 @@ var CallHandler = {
       return;
 
     this._telephonySetup = true;
+
+    // Somehow the muted property appears to true after initialization.
+    // Set it to false.
+    navigator.mozTelephony.muted = false;
 
     var telephony = navigator.mozTelephony;
     if (telephony.calls.length > 0) {
