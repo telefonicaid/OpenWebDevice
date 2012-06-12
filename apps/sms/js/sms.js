@@ -191,7 +191,7 @@ var ConversationListView = {
             Push an array containing [timestap, conversation]
             so we can order the list by timestap.
           */
-          orderedConversations.push([conversations[num].timestamp, 
+          orderedConversations.push([conversations[num].timestamp,
                                     conversations[num]]);
         }
         orderedConversations.sort(function(a,b) {
@@ -204,8 +204,13 @@ var ConversationListView = {
           if (self.delNumList.indexOf(conversation.num) > -1) {
             continue;
           }
-          var msg = self.createNewConversation(conversation);
-          fragment += msg;
+
+          //Add a grouping header if neccessary
+          var header = self.createNewHeader(conversation);
+          if (header != null) {
+            fragment += header;
+          }
+          fragment += self.createNewConversation(conversation);
         }
         self.view.innerHTML = fragment;
         if (self.delNumList.length > 0) {
@@ -213,6 +218,54 @@ var ConversationListView = {
         }
       };
     }, null);
+  },
+
+  //Adds a new grouping header if necesary (today, tomorrow, ...)
+  createNewHeader: function cl_createNewHeader(conversation) {
+    function sameDay(ts1, ts2) {
+      var d1, d2;
+      d1 = new Date(ts1);
+      d2 = new Date(ts2);
+
+      return d1.getFullYear() == d2.getFullYear() &&
+        d1.getMonth() == d2.getMonth() &&
+        d1.getDate() == d2.getDate();
+    };
+
+    if (this._lastHeader && sameDay(this._lastHeader, conversation.timestamp)) {
+      return null;
+    }
+
+    this._lastHeader = conversation.timestamp;
+
+    var now = new Date();
+    //Build the today date starting a 00:00:00
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var diff = today.getTime() - conversation.timestamp;
+    var aDay = 1000 * 60 * 60 * 24; //Miliseconds for a day
+
+    var content;
+    if (diff <= 0) {
+      //Show today
+      content = 'TODAY'; //TODO: Localise
+    } else if (diff > 0 && diff < aDay * 2) {
+      //Show yesterday
+      content = 'YESTERDAY'; //TODO: Localise
+    } else if (diff < 4 * aDay) {
+      //Show the day of the week
+      var d = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
+      'Thursday', 'Friday', 'Saturday'];
+      //TODO: Localise
+      content = d[new Date(conversation.timestamp).getDay()];
+    } else {
+      //Show the date
+      var d = new Date(conversation.timestamp);
+      //TODO: Localise
+      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    }
+
+    return '<div class="groupHeader">' + content + '</div>';
+
   },
 
   createNewConversation: function cl_createNewConversation(conversation) {
@@ -334,9 +387,9 @@ var ConversationListView = {
     this.delNumList = [];
 
     var inputElements_list = document.getElementById('msg-conversations-list').getElementsByTagName('a');
-    console.log('******************* Detectados '+ inputElements_list.length + ' elementos');
+    console.log('******************* Detectados ' + inputElements_list.length + ' elementos');
     for (var i = 0; i < inputElements_list.length; i++) {
-      console.log('******* Numero: '+ inputElements_list[i].dataset.num);
+      console.log('******* Numero: ' + inputElements_list[i].dataset.num);
       this.delNumList.push(inputElements_list[i].dataset.num);
     }
 

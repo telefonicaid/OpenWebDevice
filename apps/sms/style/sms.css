@@ -5,7 +5,7 @@ html, body {
   overflow-x: hidden;
   overflow-y: hidden;
 
-  font-size: 10px; /** 10px aiming at devices with 219dpi, 7.3px for 160dpi, change when needed */
+  font-size: 7.3px; /** 10px aiming at devices with 219dpi, 7.3px for 160dpi, change when needed */
 }
 
 body {
@@ -844,5 +844,10 @@ body.confirmation-pending #confirmation-panel {
 }
 #confirmation-dialog .button {
     margin: 2rem 1.5rem 0rem;
+}
+
+.groupHeader {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
 }
 
