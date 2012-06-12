@@ -502,11 +502,17 @@ var ConversationView = {
           className = 'class="receiver pending"';
 
         var pic = 'style/images/contact-placeholder.png';
+        
+        //Split body in different lines if the sms contains \n
+        var msgParts = msg.body.split('\n');
+        for(var i in msgParts) {
+          msgParts[i] = escapeHTML(msgParts[i]);
+        }
 
-        var body = msg.body.replace(/\n/g, '<br />');
+        var body = msgParts.join('<p>');
         fragment += '<div ' + className + ' ' + dataNum + ' ' + dataId + '>' +
                       '<input type="checkbox" class="fake-checkbox"/>' + '<span></span>' +
-                      '<div class="text">' + escapeHTML(body) + '</div>' +
+                      '<div class="text">' + body + '</div>' +
                       '<div class="time" data-time="' + msg.timestamp.getTime() + '">' +
                           prettyDate(msg.timestamp) + '</div>' +
                     '</div>';
