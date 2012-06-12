@@ -553,7 +553,7 @@ body.conversation-new-msg #view-num {
 }
 
 
-#view-list > div {
+#view-list > div .message-container {
   background: url("images/app-texture.png") repeat scroll 50% 50%, rgb(191, 204, 215);
   margin: 0.8rem;
   min-height: 6.4rem;
@@ -563,20 +563,17 @@ body.conversation-new-msg #view-num {
   -moz-box-sizing: border-box;
 }
 
-#view-list > div.sender {
-  /* Remove the thumbnail for current stage.
-   *padding need shit back to 9.6rem when social network integration is ready*/  
+
+#view-list > div .sender {
   padding-left: 1.6rem;
 }
 
-#view-list > div.receiver {
-  /* Remove the thumbnail for current stage.
-   *padding need shit back to 9.6rem when social network integration is ready*/  
+#view-list > div .receiver {
   padding-right: 1.6rem;
   text-align: right;
 }
 
-#view-list > div.pending {
+#view-list > div .pending {
   -moz-animation: fadeIn 2s ease;
   opacity: 0.5;
 }
@@ -640,7 +637,7 @@ body.edit-mode #view-list .time {
   right: 10.6rem;
 }
 
-#view-list > div::before {
+#view-list > div .message-container::before {
   content: '';
   display: block;
   width: 1.12rem; /* 0.8rem * sqrt(2) */
@@ -651,31 +648,50 @@ body.edit-mode #view-list .time {
   -moz-transform: rotate(45deg);
 }
 
-#view-list > div.sender::before {
+#view-list > div .sender {
+    margin-right: 4rem;
+    margin-left: 1.5rem;
+}
+#view-list > div .sender::before {
   left: -0.56rem;
 }
 
-#view-list > div.receiver::before {
+#view-list > div .receiver {
+    margin-left: 4rem;
+    margin-right: 1.5rem;
+}
+#view-list > div .receiver::before {
   right: -0.56rem;
 }
 
-body.edit-mode #view-list > div.message {
+body.edit-mode #view-list > div.message-block {
   -moz-transform: translateX(9rem);
 }
 
-#view-list > div.message:active {
-  background: hsla(35,100%,50%,.2);
+
+/****/
+#view-list > div.message-block {
+  -moz-box-sizing: border-box;
+  display: block;
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  padding: 1.3rem 1.6rem 0 11.2rem;
+  width: -moz-calc(100% + 9rem);
+  right: 9rem;
+  -moz-transition: -moz-transform 0.3s ease;
+}
+/*****/
+
+#view-list > div.message-block:active > div.message-container{
+  background: rgba(183,214,54,.6);
 }
 
-#view-list > div.hide {
-  display: none;
-}
-
-#view-list > div.message > * {
+#view-list > div.message-block > * {
   pointer-events: none;
 }
 
-#view-list > div.message:first-child {
+#view-list > div.message-block:first-child {
   border-top-color: transparent;
 }
 
@@ -688,11 +704,11 @@ body.edit-mode #view-list > div.message {
   height: 100%;
 }
 
-#view-list div > input.fake-checkbox {
+#view-list div.message-block > input.fake-checkbox {
   display: none;
 }
 
-#view-list div > span {
+#view-list div.message-block > span {
   position: absolute;
   top: -moz-calc(50% - 3.4rem);
   left: 2rem;
@@ -703,11 +719,11 @@ body.edit-mode #view-list > div.message {
 }
 
 
-#view-list div > input.fake-checkbox {
+#view-list div.message-block > input.fake-checkbox {
   display: none;
 }
 
-#view-list div > span {
+#view-list div.message-block > span {
   position: absolute;
   top: -moz-calc(50% - 3.4rem);
   left: 2rem;
@@ -717,7 +733,7 @@ body.edit-mode #view-list > div.message {
   border: none;
 }
 
-#view-list div > input[type=checkbox] + span {
+#view-list div.message-block > input[type=checkbox] + span {
   width: 6rem;
   height: 6rem;
   border: 0.4rem solid;
@@ -729,9 +745,9 @@ body.edit-mode #view-list > div.message {
   background: -moz-linear-gradient(#eaeae4, #ffffff);
 }
 
-#view-list div > input[type=checkbox]:checked + span {
+#view-list div.message-block > input[type=checkbox]:checked + span {
   background: url("./images/checked.png") no-repeat scroll center center,
-    -moz-linear-gradient(#ffffff, #eaeae4);
+  -moz-linear-gradient(#ffffff, #eaeae4);
 }
 /** end fake checkboxes **/
 

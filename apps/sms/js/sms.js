@@ -66,7 +66,6 @@ var MessageManager = {
 };
 
 
-
 var ConversationListView = {
   get view() {
     delete this.view;
@@ -442,6 +441,7 @@ var ConversationView = {
     // click event does not trigger when keyboard is hiding
     document.getElementById('view-msg-send').addEventListener(
       'mousedown', this.sendMessage.bind(this));
+    
 
     this.input.addEventListener('input', this.updateInputHeight.bind(this));
     this.view.addEventListener('click', this);
@@ -575,12 +575,14 @@ var ConversationView = {
         var pic = 'style/images/contact-placeholder.png';
 
         var body = msg.body.replace(/\n/g, '<br />');
-        fragment += '<div class="message ' + className + ' ' + dataNum + ' ' + dataId + '>' +
+        fragment += '<div class="message-block">' + 
                       '<input type="checkbox" class="fake-checkbox"/>' + '<span></span>' +
-                      '<div class="text">' + escapeHTML(body) + '</div>' +
-                      '<div class="time" data-time="' + msg.timestamp.getTime() + '">' +
-                          prettyDate(msg.timestamp) + '</div>' +
-                    '</div>';
+                      '<div class="message-container ' + className + ' ' + dataNum + ' ' + dataId + '>' +                      
+                        '<div class="text">' + escapeHTML(body) + '</div>' +
+                        '<div class="time" data-time="' + msg.timestamp.getTime() + '">' +
+                            prettyDate(msg.timestamp) + '</div>' +
+                      '</div>' + 
+                     '</div>';
       }
 
       view.innerHTML = fragment;
@@ -700,6 +702,7 @@ var ConversationView = {
     window.location.hash = '';
     return true;
   },
+  
   sendMessage: function cv_sendMessage() {
     var num = this.num.value;
     var text = document.getElementById('view-msg-text').value;
