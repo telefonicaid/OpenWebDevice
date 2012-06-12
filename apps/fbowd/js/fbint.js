@@ -49,6 +49,9 @@ if(typeof window.owdFbInt === 'undefined') {
       var canvas = document.createElement('canvas');
       canvas.hidden = true;
 
+      var BLOCK_SIZE = 5;
+      var nextBlock = BLOCK_SIZE + 3;
+
     /**
      *  Initialization function it tries to find an access token
      *
@@ -58,11 +61,45 @@ if(typeof window.owdFbInt === 'undefined') {
       window.console.log('document.location.search: ',document.location.search);
 
       if(document.location.search.indexOf('redirect') !== -1
-                        && document.location.toString().indexOf('logout') === -1) {
+                    && document.location.toString().indexOf('logout') === -1) {
 
         window.console.log('Coming from a redirection!!!');
         owdFbInt.start();
       }
+    }
+
+    /**
+     *  Prepares the UI for infinite scrolling
+     *
+     *
+     */
+    function prepareInfiniteScroll() {
+      InfiniteScroll.create ({
+        element: '#main',
+        callback: loadMoreFriends
+      });
+
+      window.console.log('Infinite scroll done!');
+    }
+
+    /**
+     *  Adds more friends to the list
+     *
+     */
+    function loadMoreFriends(done) {
+      window.console.log('Infinite scroll callback invoked');
+      var ret = false;
+      var nextElements;
+      if(nextBlock + BLOCK_SIZE < myFriends.length) {
+        nextElements = myFriends.slice(nextBlock,nextBlock + BLOCK_SIZE);
+        nextBlock += BLOCK_SIZE;
+      }
+      else {
+        nextElements = myFriends.slice(nextBlock);
+        ret = true;
+      }
+      owd.templates.append(contactList,nextElements);
+      done(ret);
     }
 
     owdFbInt.start = function() {
@@ -76,6 +113,7 @@ if(typeof window.owdFbInt === 'undefined') {
     function tokenReady(at) {
       accessToken = at;
 
+      prepareInfiniteScroll();
       owdFbInt.getFriends();
     }
 
@@ -116,7 +154,7 @@ if(typeof window.owdFbInt === 'undefined') {
         myFriends = response.data;
 
         // Only append the first 10 friends to avoid collapsing the browser
-        var pagedData = myFriends.slice(0,10);
+        var pagedData = myFriends.slice(0,nextBlock);
 
         owd.templates.append('#myFbContacts',pagedData);
 
@@ -259,6 +297,10 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
+    /**
+     *   Obtains the photo of the contact as a data URL
+     *
+     */
     function getContactPhoto(uid,cb) {
       var contactImg = getContactImg(uid,function(contactImg) {
         // Checking whether the image was actually loaded or not
@@ -276,6 +318,10 @@ if(typeof window.owdFbInt === 'undefined') {
       });
     }
 
+    /**
+     *  Obtains a img DOM Element with the Contact's img
+     *
+     */
     function getContactImg(uid,cb) {
       window.console.log('Uid to retrieve img for: ',uid);
       var img = contactList.querySelector('#c' + uid + ' img');
@@ -310,6 +356,10 @@ if(typeof window.owdFbInt === 'undefined') {
       var pointer = 0;
       this.pending = contacts.length;
 
+      /**
+       *  Imports a slice
+       *
+       */
       function importSlice() {
         var cgroup = contacts.slice(pointer,pointer + chunkSize);
           persistContactGroup(cgroup,function() {
@@ -317,6 +367,10 @@ if(typeof window.owdFbInt === 'undefined') {
             this.onsuccess(); }.bind(this) );
       } // importSlice
 
+      /**
+       *  This method allows to continue the process
+       *
+       */
       this.continue = function() {
         if(this.pending > 0) {
           if(this.pending < chunkSize) {
@@ -330,12 +384,20 @@ if(typeof window.owdFbInt === 'undefined') {
         }
       }
 
+      /**
+       *  Starts a new import process
+       *
+       */
       this.start = function() {
         pointer = 0;
         this.pending = contacts.length;
         (importSlice.bind(this))();
       }
 
+    /**
+     *  Persists a group of contacts
+     *
+     */
     function persistContactGroup(cgroup,doneCB) {
       var numResponses = 0;
       var totalContacts = cgroup.length;

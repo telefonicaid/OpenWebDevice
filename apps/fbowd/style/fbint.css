@@ -2,10 +2,11 @@
     display: none !important;
 }
 
+/*
  html,body {
         overflow: auto !important;
       }
-
+*/
 
       ol {
             list-style: none;
@@ -70,6 +71,7 @@ dd.input {
 #main {
  clear:left;
  width:100%;
+ height:90%;
 }
 
 #curtain {

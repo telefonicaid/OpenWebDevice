@@ -7,7 +7,9 @@
     <link href="common.css" rel="stylesheet">
     <link href="style/fbint.css" rel="stylesheet">
     <script defer src="templates.js"></script>
-    <script src="common-owd.js"></script>
+    <script src="js/common-owd.js"></script>
+    <script src="infinite-scroll.js"></script>
+    <link rel="stylesheet" href="infinite-scroll.css">
   </head>
 
   <body data-state='welcome'>
@@ -19,12 +21,14 @@
     </header>
 
     <section id="main">
-      <ol id="myFbContacts" class="itemSet" onclick="owdFbInt.ui.selection(event)">
+      <ol id="myFbContacts" class="itemSet"
+                                    onclick="owdFbInt.ui.selection(event)">
           <li data-template>
             <article id="c#uid#" class="altBorders contactEntry">
               <dl>
                 <dd class="img">
-                  <img crossorigin="anonymous" src="https://graph.facebook.com/#uid#/picture?type=square">
+                  <img crossorigin="anonymous"
+                    src="https://graph.facebook.com/#uid#/picture?type=square">
                 </dd>
                 <dt>#name#</dt>
                 <dd class="input"><input name="#_idx_#" type=checkbox></dd>
