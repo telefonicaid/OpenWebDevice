@@ -433,15 +433,48 @@ var ConversationView = {
     delete this.input;
     return this.input = document.getElementById('view-msg-text');
   },
+  
+  get doneButton() {
+      delete this.doneButton;
+      return this.doneButton = document.getElementById('view-done-button');
+  },
+
+  get deleteButton() {
+    delete this.deleteButton;
+    return this.deleteButton = document.getElementById('view-delete-button');
+  },
+
+  get deleteAllButton() {
+    delete this.deleteAllButton;
+    return this.deleteAllButton = document.getElementById('view-delete-all-button');
+
+  },
+
+  get cancelDialogButton() {
+    delete this.cancelDialogButton;
+    return this.cancelDialogButton = document.getElementById('cancel-button');
+  },
+
+  get acceptDialogButton() {
+    delete this.acceptDialogButton;
+    return this.acceptDialogButton = document.getElementById('accept-button');
+  },
+  
+  get sendButton() {
+      delete this.sendButton;
+      return this.sendButton = document.getElementById('view-msg-send');
+  },
 
   init: function cv_init() {
     if (navigator.mozSms)
       navigator.mozSms.addEventListener('received', this);
 
     // click event does not trigger when keyboard is hiding
-    document.getElementById('view-msg-send').addEventListener(
-      'mousedown', this.sendMessage.bind(this));
-    
+    this.sendButton.addEventListener('mousedown', this.sendMessage.bind(this));
+      
+    this.doneButton.addEventListener('mousedown', this);
+    this.deleteButton.addEventListener('mousedown', this);
+    this.deleteAllButton.addEventListener('mousedown', this);
 
     this.input.addEventListener('input', this.updateInputHeight.bind(this));
     this.view.addEventListener('click', this);
@@ -660,6 +693,31 @@ var ConversationView = {
           console.log("************ ON A LIST ITEM WITH SENDER/RECEIVER PARENT");
           this.onListItemClicked(evt);
         } else console.log("NOPE");
+        break;
+        
+       case 'mousedown':
+        switch (evt.currentTarget) {
+          case this.doneButton:
+            console.log("******** DONE");
+            window.location.hash = "#num="+this.title.num;
+            break;
+          case this.deleteButton:
+            console.log("******** DELETE");
+            this.executeMessageDelete();
+            break;
+          case this.deleteAllButton:
+            console.log("******** DELETE ALL");
+            this.showConfirmationDialog();
+            break;
+          case this.acceptDialogButton:
+            console.log("******** ACCEPT");
+            this.executeAllMessagesDelete();
+            break;
+          case this.cancelDialogButton:
+            console.log("******** CANCEL");
+            this.hideConfirmationDialog();
+            break;
+        }
         break;
     }
   },

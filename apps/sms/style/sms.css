@@ -455,6 +455,10 @@ body.edit-mode .edit-show {
   position: absolute;
   margin: 0.6rem 0 0 2.4rem;
 }
+#view-done-button {
+  position: absolute;
+  margin: 0.6rem 0 0 2.4rem;
+}
 
 #view-edit-button { 
   right: 0rem;
@@ -782,6 +786,24 @@ body.edit-mode #view-list > div.message-block {
 #view-msg-send {
   margin: 1.4rem 0 0 1.6rem;
   min-width: 9.6rem;
+}
+
+#view-delete-button { 
+  right: 0rem;
+  top: 0rem;
+  margin-top: 1.4rem;
+  margin-right: 2.4rem;  
+  position: absolute;
+  min-width: 12rem;
+}
+
+#view-delete-all-button {
+  left: 0rem;
+  top: 0rem;
+  margin-top: 1.4rem;
+  margin-left: 2.4rem;  
+  position: absolute;
+  min-width: 15rem;
 }
 
 /* localization */
