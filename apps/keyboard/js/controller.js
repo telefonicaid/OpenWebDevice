@@ -28,8 +28,7 @@ const IMEController = (function() {
   var BASIC_LAYOUT = -1,
       ALTERNATE_LAYOUT = -2,
       SWITCH_KEYBOARD = -3,
-      TOGGLE_CANDIDATE_PANEL = -4,
-      DOT_COM = -5;
+      TOGGLE_CANDIDATE_PANEL = -4;
 
   var LAYOUT_MODE_DEFAULT = 'Default',
       LAYOUT_MODE_SYMBOLS_I = 'Symbols_1',
@@ -38,15 +37,27 @@ const IMEController = (function() {
   // current state of the keyboard
   var _isPressing = null,
       _isWaitingForSecondTap = false,
-      _showingAlternativesMenu = true,
-      _menuLockedArea = null,
-      _currentKey = null,
-      _keyWithMenu = null,
-      _baseLayout = '',
-      _currentLayout = null,
-      _layoutMode = LAYOUT_MODE_DEFAULT,
+      _isShowingAlternativesMenu = true,
+      _isContinousSpacePressed = false,
+      _isWaitingForSpaceSecondTap = false,
       _isUpperCase = false,
-      _currentInputType = 'text';
+      _baseLayoutName = '',
+      _currentLayout = null,
+      _currentLayoutMode = LAYOUT_MODE_DEFAULT,
+      _currentKey = null,
+      _currentMenuKey = null,
+      _currentInputType = 'text',
+      _menuLockedArea = null,
+      _lastHeight = 0;
+
+  var _IMEngines = {};
+  var _currentEngine = function() {
+      return _IMEngines[Keyboards[_baseLayoutName].imEngine];
+  };
+
+  // Taps the space key twice within kSpaceDoubleTapTimeoout
+  // to produce a "." followed by a space
+  var _kSpaceDoubleTapTimeout = 700;
 
   // show accent char menu (if there is one) after kAccentCharMenuTimeout
   var _kAccentCharMenuTimeout = 700;
@@ -66,10 +77,14 @@ const IMEController = (function() {
   var _kRepeatRate = 100,
       _kRepeatTimeout = 700;
 
-    // Taps the shift key twice within kCapsLockTimeout
-    // to lock the keyboard at upper case state.
+  // Taps the shift key twice within kCapsLockTimeout
+  // to lock the keyboard at upper case state.
   var _kCapsLockTimeout = 450,
       _isUpperCaseLocked = false;
+
+  var _severalLanguages = function() {
+    return IMEManager.keyboards.length > 1;
+  };
 
   function _mapType(type) {
     switch (type) {
@@ -95,78 +110,57 @@ const IMEController = (function() {
     }
   }
 
-  // depending on current layout mode, return the next switch ABC/SYMBOLS button
-  function _getSwitchKey(layoutMode) {
-    var value, keyCode;
-
-    // next is SYMBOLS
-    if (layoutMode === LAYOUT_MODE_DEFAULT) {
-      value = '?123';
-      keyCode = ALTERNATE_LAYOUT;
-
-    // next is ABC
-    } else {
-      value = 'ABC';
-      keyCode = BASIC_LAYOUT;
-    }
-
-    return {
-      value: value,
-      ratio: 2,
-      keyCode: keyCode
-    };
-  };
-
   // add some special keys depending on the input's type
-  function _getTypeSensitiveKeys(inputType, ratio, overwrites) {
+  function _addTypeSensitiveKeys(inputType, row, space, where, overwrites) {
     overwrites = overwrites || {};
-    var newKeys = [];
     switch (inputType) {
       case 'url':
-        newKeys.push({ value: '.', ratio: 1, keyCode: 46 });
-        newKeys.push({ value: '/', ratio: 2, keyCode: 47 });
-        newKeys.push({ value: '.com', ratio: 2, keyCode: DOT_COM });
+        space.ratio -= 5;
+        row.splice(where, 1, // delete space
+          { value: '.', ratio: 1, keyCode: 46 },
+          { value: '/', ratio: 2, keyCode: 47 },
+          { value: '.com', ratio: 2, compositeKey: '.com' }
+        );
       break;
 
       case 'email':
-        // ratio -= 2;
-        newKeys.push({ value: '&nbsp', ratio: ratio, keyCode: KeyboardEvent.DOM_VK_SPACE });
-        newKeys.push({ value: '@', ratio: 1, keyCode: 64 });
-        newKeys.push({ value: '.', ratio: 1, keyCode: 46 });
+        space.ratio -= 2;
+        row.splice(where, 0, { value: '@', ratio: 1, keyCode: 64 });
+        row.splice(where + 2, 0, { value: '.', ratio: 1, keyCode: 46 });
       break;
 
       case 'text':
 
-        if (overwrites['.'] !== false)
-          // ratio -= 1;
+        var next = where + 1;
+        if (overwrites['.'] !== false) {
+          space.ratio -= 1;
+          next = where + 2;
+        }
         if (overwrites[','] !== false)
-          // ratio -= 1;
+          space.ratio -= 1;
 
         if (overwrites[',']) {
-          newKeys.push({
+          row.splice(where, 0, {
             value: overwrites[','],
             ratio: 1,
-            keyCode:
-            overwrites[','].charCodeAt(0)
+            keyCode: overwrites[','].charCodeAt(0)
           });
         } else if (overwrites[','] !== false) {
-          newKeys.push({
+          row.splice(where, 0, {
             value: ',',
             ratio: 1,
             keyCode: 44
           });
         }
 
-        newKeys.push({ value: '&nbsp', ratio: ratio, keyCode: KeyboardEvent.DOM_VK_SPACE });
-
         if (overwrites['.']) {
-          newKeys.push({
+          row.splice(next, 0, {
             value: overwrites['.'],
             ratio: 1,
             keyCode: overwrites['.'].charCodeAt(0)
           });
         } else if (overwrites['.'] !== false) {
-          newKeys.push({
+          row.splice(next, 0, {
             value: '.',
             ratio: 1,
             keyCode: 46
@@ -176,73 +170,104 @@ const IMEController = (function() {
       break;
     }
 
-    return newKeys;
   };
 
-  // build the actual layout depending on baseLayout selected, the input's type and layoutMode
-  function _buildLayout(baseLayout, inputType, layoutMode, uppercase) {
+  // mainly, compute the input sensitive row and add it to the layout
+  function _buildLayout(baseLayout, inputType, layoutMode) {
 
-    function deepCopy(obj) {
-      return JSON.parse(JSON.stringify(obj));
+    function copy(obj) {
+      var newObj = {};
+      for (var prop in obj) if (obj.hasOwnProperty(prop)) {
+        newObj[prop] = obj[prop];
+      }
+      return newObj;
     }
 
-    var layout, l,
-        switchKey,
-        newKeys = [],
-        ratio = 8;
-
-    // these types force specific layouts
     if (inputType === 'number' || inputType === 'tel')
-      return deepCopy(Keyboards[inputType + 'Layout']);
+      baseLayout = inputType + 'Layout';
 
-    // Clone the layout
-    layout = deepCopy(Keyboards[baseLayout]);
+    var layout = Keyboards[_baseLayoutName][baseLayout] || Keyboards[baseLayout];
 
-    // Transform to uppercase
-    if (uppercase) {
-      layout.keys.forEach(function(row) {
-        row.forEach(function(key) {
-          var v = key.value;
+    // look for keyspace (it behaves as the placeholder for special keys)
+    var where = false;
+    for (var r = 0, row; !where && (row = layout.keys[r]); r += 1)
+      for (var c = 0, space; space = layout.keys[r][c]; c += 1) {
+        if (space.keyCode == KeyboardEvent.DOM_VK_SPACE) {
+          where = r;
+          break;
+        }
+      }
 
-          if (layout.upperCase && layout.upperCase[v]) {
-            key.value = layout.upperCase[v];
+    // if found, add special keys
+    if (where) {
 
-          } else {
-            key.value = key.value.toLocaleUpperCase();
-          }
+      // we will perform some alchemy here, so preserve...
+      layout = copy(layout); // the original space row
+      layout.keys = layout.keys.slice(0);
+      row = layout.keys[where] = layout.keys[where].slice(0);
+      space = copy(space);   // and the original space key
+      row[c] = space;
+
+      // switch languages button
+      if (IMEManager.keyboards.length > 1 && !layout['hidesSwitchKey']) {
+        space.ratio -= 1;
+        row.splice(c, 0, {
+          value: '&#x1f310;',
+          ratio: 1,
+          keyCode: SWITCH_KEYBOARD
         });
-      });
-    }
+        c += 1;
+      }
 
-    // Switch Languages button
-    var severalLanguages = IMEManager.keyboards.length > 1 && !layout['hidesSwitchKey'];
-    if (severalLanguages) {
-      // Switch keyboard key
-      // ratio -= 1;
-      newKeys.push({ value: '&#x1f310;', ratio: 1, keyCode: SWITCH_KEYBOARD });
-    }
+      // Alternate layout key
+      // This gives the author the ability to change the alternate layout
+      // key contents
+      var alternateLayoutKey = '?123';
+      if (layout['alternateLayoutKey']) {
+        alternateLayoutKey = layout['alternateLayoutKey'];
+      }
 
-    // Switch ABC/SYMBOLS button
-    if (!layout['disableAlternateLayout']) {
-      console.log('adding layout');
-      switchKey = _getSwitchKey(layoutMode);
-/*      if (severalLanguages === false)
-         switchKey.ratio += 1;
-*/
-      newKeys.push(switchKey);
-      // ratio -= switchKey.ratio;
-    }
-    // Text types specific keys
-    if (!layout['typeInsensitive']) {
-      newKeys = newKeys.concat(_getTypeSensitiveKeys(inputType, ratio, layout.textLayoutOverwrite));
-    }
+      // This gives the author the ability to change the basic layout
+      // key contents
+      var basicLayoutKey = 'ABC';
+      if (layout['basicLayoutKey']) {
+        basicLayoutKey = layout['basicLayoutKey'];
+      }
 
-    // Return key
-    newKeys.push({ value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN });
+      if (!layout['disableAlternateLayout']) {
+        space.ratio -= 2;
+        if (_currentLayoutMode === LAYOUT_MODE_DEFAULT) {
+          row.splice(c, 0, {
+            keyCode: ALTERNATE_LAYOUT,
+            value: alternateLayoutKey,
+            ratio: 2
+          });
 
-    // TODO: Review this, why to always discard the last row?
-    layout.keys.pop(); // remove last row
-    layout.keys.push(newKeys);
+        } else {
+          row.splice(c, 0, {
+            keyCode: BASIC_LAYOUT,
+            value: basicLayoutKey,
+            ratio: 2
+          });
+        }
+        c += 1;
+      }
+
+      // Text types specific keys
+      var spliceArgs;
+      if (!layout['typeInsensitive']) {
+        _addTypeSensitiveKeys(
+          inputType,
+          row,
+          space,
+          c,
+          layout.textLayoutOverwrite
+        );
+      }
+
+    } else {
+      console.warn('No space key found. No special keys will be added.');
+    }
 
     return layout;
   }
@@ -253,102 +278,144 @@ const IMEController = (function() {
 
     // request for SYMBOLS (page 1)
     if (keycode === ALTERNATE_LAYOUT) {
-      _layoutMode = LAYOUT_MODE_SYMBOLS_I;
+      _currentLayoutMode = LAYOUT_MODE_SYMBOLS_I;
       base = 'alternateLayout';
 
     // altern between pages 1 and 2 of SYMBOLS
     } else if (keycode === KeyEvent.DOM_VK_ALT) {
 
-      if (_layoutMode === LAYOUT_MODE_SYMBOLS_I) {
-        _layoutMode = LAYOUT_MODE_SYMBOLS_II;
+      if (_currentLayoutMode === LAYOUT_MODE_SYMBOLS_I) {
+        _currentLayoutMode = LAYOUT_MODE_SYMBOLS_II;
         base = 'symbolLayout';
 
       } else {
-        _layoutMode = LAYOUT_MODE_SYMBOLS_I;
+        _currentLayoutMode = LAYOUT_MODE_SYMBOLS_I;
         base = 'alternateLayout';
       }
 
     // request for ABC
     } else {
-      _layoutMode = LAYOUT_MODE_DEFAULT;
-      base = _baseLayout;
+      _currentLayoutMode = LAYOUT_MODE_DEFAULT;
+      base = _baseLayoutName;
     }
 
-    _draw(base, _currentInputType, _layoutMode);
+    _draw(base, _currentInputType, _currentLayoutMode);
   }
 
   function _updateTargetWindowHeight() {
-    var resizeAction = {action: 'resize', height: IMERender.ime.scrollHeight + 'px'};
-    parent.postMessage(JSON.stringify(resizeAction), '*');
+    var height;
+    if (IMERender.ime.dataset.hidden) {
+      height = 0;
+    } else {
+      height = IMERender.ime.scrollHeight;
+    }
+
+    var message = {
+      action: 'updateHeight',
+      keyboardHeight: height,
+      hidden: !!IMERender.ime.dataset.hidden
+    };
+
+    parent.postMessage(JSON.stringify(message), '*');
   }
+
+  var _dimensionsObserver = new MutationObserver(_updateTargetWindowHeight);
+  var _dimensionsObserverConfig = {
+    childList: true, // to detect changes in IMEngine
+    attributes: true, attributeFilter: ['class', 'style', 'data-hidden']
+  };
 
   // sends a delete code to remove last character
   function _sendDelete(feedback) {
     if (feedback)
       IMEFeedback.triggerFeedback();
-    if (Keyboards[_baseLayout].type == 'ime' &&
-        _layoutMode === LAYOUT_MODE_DEFAULT) {
-      // XXX: Not yet implemented
-      // this.currentEngine.click(keyCode);
+    if (Keyboards[_baseLayoutName].type == 'ime' &&
+        _currentLayoutMode === LAYOUT_MODE_DEFAULT) {
+      _currentEngine().click(KeyboardEvent.DOM_VK_BACK_SPACE);
       return;
     }
     window.navigator.mozKeyboard.sendKey(KeyboardEvent.DOM_VK_BACK_SPACE, 0);
   };
 
   function _highlightKey(target) {
-    if (target.dataset.keycode != KeyboardEvent.DOM_VK_SPACE) {
-      IMERender.highlightKey(target);
-    }
+    IMERender.highlightKey(target);
+  }
+
+  // given a key object, return the upper value taking in count
+  // if it is a special key of it has been overwrote
+  function _getUpperCaseValue(key) {
+    var specialCodes = [
+      KeyEvent.DOM_VK_BACK_SPACE,
+      KeyEvent.DOM_VK_CAPS_LOCK,
+      KeyEvent.DOM_VK_RETURN,
+      KeyEvent.DOM_VK_ALT,
+      KeyEvent.DOM_VK_SPACE
+    ];
+    var hasSpecialCode = specialCodes.indexOf(key.keyCode) > -1;
+    if (key.keyCode < 0 || hasSpecialCode || key.compositeKey)
+      return key.value;
+
+    var upperCase = _currentLayout.upperCase || {};
+    var v = upperCase[key.value] || key.value.toUpperCase();
+    return v;
   }
 
   function _showAlternatives(key) {
-    var alternatives, altMap, defaultKey, currentKey;
-    var r = key.dataset.row || -1, c = key.dataset.column || -1;
+    var alternatives, altMap, value, keyObj, uppercaseValue;
+    var r = key ? key.dataset.row : -1, c = key ? key.dataset.column : -1;
     if (r < 0 || c < 0)
       return;
 
     // get alternatives from layout
-    altMap = Keyboards[_baseLayout].alt || {};
-    defaultKey = Keyboards[_baseLayout].keys[r][c];
-    currentKey = _currentLayout.keys[r][c];
+    altMap = _currentLayout.alt || {};
+    keyObj = _currentLayout.keys[r][c];
+    value = keyObj.value;
+    alternatives = altMap[value] || '';
 
-    // in uppercar, look for current value or the uppercase of the default
+    // in uppercase, look for other alternatives or use default's
     if (_isUpperCase) {
-      if (altMap[currentKey.value] !== undefined) {
-        alternatives = altMap[currentKey.value] || '';
-      } else {
-        alternatives = (altMap[defaultKey.value] || '').toUpperCase();
-      }
-
-    // in other case, look for default value
-    } else {
-      alternatives = altMap[currentKey.value] || '';
+      uppercaseValue = _getUpperCaseValue(keyObj);
+      alternatives = altMap[uppercaseValue] || alternatives.toUpperCase();
     }
 
-    alternatives = alternatives.split('');
+    if (alternatives.indexOf(' ') != -1) {
+      alternatives = alternatives.split(' ');
+      // check just one item
+      if (alternatives.length === 2 && alternatives[1] === '')
+        alternatives.pop();
+    } else {
+      alternatives = alternatives.split('');
+    }
+
     if (!alternatives.length)
       return;
 
     IMERender.showAlternativesCharMenu(key, alternatives);
-    _showingAlternativesMenu = true;
-    _keyWithMenu = key;
+    _isShowingAlternativesMenu = true;
+    _currentMenuKey = key;
 
-    // Locked limits 
+    // Locked limits
     _menuLockedArea = {
-      top: getWindowTop(_keyWithMenu),
-      bottom: getWindowTop(_keyWithMenu)+_keyWithMenu.scrollHeight,
+      top: getWindowTop(_currentMenuKey),
+      bottom: getWindowTop(_currentMenuKey) + _currentMenuKey.scrollHeight,
       left: getWindowLeft(IMERender.menu),
       right: getWindowLeft(IMERender.menu) + IMERender.menu.scrollWidth
     };
     _menuLockedArea.width = _menuLockedArea.right - _menuLockedArea.left;
-    _menuLockedArea.ratio = _menuLockedArea.width/IMERender.menu.children.length;
+    _menuLockedArea.ratio =
+      _menuLockedArea.width / IMERender.menu.children.length;
   }
 
   function _hideAlternatives() {
     IMERender.hideAlternativesCharMenu();
-    if (_keyWithMenu)
-      IMERender.unHighlightKey(_keyWithMenu);
-    _showingAlternativesMenu = false;
+    if (_currentMenuKey)
+      IMERender.unHighlightKey(_currentMenuKey);
+    _isShowingAlternativesMenu = false;
+  }
+
+  function _isNormalKey(key) {
+    var keyCode = parseInt(key.dataset.keycode);
+    return keyCode || key.dataset.selection || key.dataset.compositekey;
   }
 
   //
@@ -356,14 +423,13 @@ const IMEController = (function() {
   //
 
   function _onMouseDown(evt) {
+    var keyCode;
+
     _isPressing = true;
     _currentKey = evt.target;
-    var keyCode = parseInt(_currentKey.dataset.keycode);
-
-/* XXX: I dont know what is selection
-    if (!keyCode && !target.dataset.selection)
+    if (!_isNormalKey(_currentKey))
       return;
-*/
+    keyCode = parseInt(_currentKey.dataset.keycode);
 
     // Feedback
     _highlightKey(_currentKey);
@@ -398,12 +464,12 @@ const IMEController = (function() {
     var altCount, width, menuChildren;
 
     // Control locked zone for menu
-    if (_showingAlternativesMenu
-        && _menuLockedArea
-        && evt.screenY >= _menuLockedArea.top
-        && evt.screenY <= _menuLockedArea.bottom
-        && evt.screenX >= _menuLockedArea.left
-        && evt.screenX <= _menuLockedArea.right) {
+    if (_isShowingAlternativesMenu &&
+        _menuLockedArea &&
+        evt.screenY >= _menuLockedArea.top &&
+        evt.screenY <= _menuLockedArea.bottom &&
+        evt.screenX >= _menuLockedArea.left &&
+        evt.screenX <= _menuLockedArea.right) {
 
       clearTimeout(_hideMenuTimeout);
       menuChildren = IMERender.menu.children;
@@ -415,7 +481,9 @@ const IMEController = (function() {
         false, false, false, false, 0, null
       );
 
-      menuChildren[Math.floor((evt.screenX-_menuLockedArea.left)/_menuLockedArea.ratio)].dispatchEvent(event);
+      menuChildren[Math.floor(
+        (evt.screenX - _menuLockedArea.left) / _menuLockedArea.ratio
+      )].dispatchEvent(event);
       return;
     }
 
@@ -423,23 +491,25 @@ const IMEController = (function() {
 
   function _onMouseOver(evt) {
     var target = evt.target;
+    var keyCode = parseInt(target.dataset.keycode);
 
     // do nothing if no pressing (mouse events) or same key
     if (!_isPressing || _currentKey == target)
       return;
 
     // do nothing if no keycode
-    var keyCode = parseInt(target.dataset.keycode);
-    if (!keyCode && !target.dataset.selection)
+    if (!_isNormalKey(target))
       return;
 
     // remove current highlight
-    if (!(_showingAlternativesMenu && _currentKey === _keyWithMenu))
+    if (!(_isShowingAlternativesMenu && _currentKey === _currentMenuKey))
       IMERender.unHighlightKey(_currentKey);
 
     // ignore if moving over del key
-    if (keyCode == KeyEvent.DOM_VK_BACK_SPACE)
+    if (keyCode == KeyEvent.DOM_VK_BACK_SPACE) {
+      _currentKey = null;
       return;
+    }
 
     _highlightKey(target);
     _currentKey = target;
@@ -469,18 +539,24 @@ const IMEController = (function() {
 
   }
 
+  function _onScroll(evt) {
+    if (!_isPressing || !_currentKey)
+      return;
+
+    _onMouseLeave(evt);
+    _isPressing = false; // cancel the following mouseover event
+  }
+
   function _onMouseLeave(evt) {
-    var target = evt.target;
     if (!_isPressing || !_currentKey)
       return;
 
     IMERender.unHighlightKey(_currentKey);
     _hideMenuTimeout = window.setTimeout(function hideMenuTimeout() {
-        _hideAlternatives()
+        _hideAlternatives();
     }, _kHideAlternativesCharMenuTimeout);
 
-    if (evt.type == 'scroll')
-      _isPressing = false; // cancel the following mouseover event
+    _currentKey = null;
   }
 
   function _onMouseUp(evt) {
@@ -497,18 +573,20 @@ const IMEController = (function() {
 
     var target = _currentKey;
     var keyCode = parseInt(target.dataset.keycode);
-    if (!keyCode && !target.dataset.selection)
+    if (!_isNormalKey(target))
       return;
 
+    // IME candidate selected
     var dataset = target.dataset;
     if (dataset.selection) {
-      this.currentEngine.select(target.textContent, dataset.data);
-
-      IMERender.updateKeyHighlight();
+      _currentEngine().select(target.textContent, dataset.data);
+      _highlightKey(target);
+      _currentKey = null;
       return;
     }
 
     IMERender.unHighlightKey(target);
+    _currentKey = null;
 
     if (keyCode == KeyEvent.DOM_VK_BACK_SPACE)
       return;
@@ -516,8 +594,22 @@ const IMEController = (function() {
     // Reset the flag when a non-space key is pressed,
     // used in space key double tap handling
     if (keyCode != KeyEvent.DOM_VK_SPACE)
-      delete this.isContinousSpacePressed;
+      _isContinousSpacePressed = false;
 
+    // Handle composite key
+    var sendCompositeKey = function sendCompositeKey(compositeKey) {
+        compositeKey.split('').forEach(function sendEachKey(key) {
+          window.navigator.mozKeyboard.sendKey(0, key.charCodeAt(0));
+        });
+    }
+
+    var compositeKey = target.dataset.compositekey;
+    if (compositeKey) {
+      sendCompositeKey(compositeKey);
+      return;
+    }
+
+    // Handle normal key
     switch (keyCode) {
       case BASIC_LAYOUT:
       case ALTERNATE_LAYOUT:
@@ -529,36 +621,27 @@ const IMEController = (function() {
 
         // If the user has specify a keyboard in the menu,
         // switch to that keyboard.
-        if (target.dataset.keyboard) {
+        var language = target.dataset.keyboard ?
+          target.dataset.keyboard :
+          _baseLayoutName;
 
-          if (IMEManager.keyboards.indexOf(target.dataset.keyboard) === -1)
-            _baseLayout = IMEManager.keyboards[0];
-          else
-            _baseLayout = target.dataset.keyboard;
+        var keyboards = IMEManager.keyboards;
+        var index = keyboards.indexOf(language);
+        index = (index + 1) % keyboards.length;
+        _baseLayoutName = IMEManager.keyboards[index];
 
-        } else {
-          // If this is the last keyboard in the stack, start
-          // back from the beginning.
-          var keyboards = IMEManager.keyboards;
-          var index = keyboards.indexOf(_baseLayout);
-          if (index >= keyboards.length - 1 || index < 0)
-            _baseLayout = keyboards[0];
-          else
-            _baseLayout = keyboards[++index];
-
-        }
-
-        _layoutMode = LAYOUT_MODE_DEFAULT;
+        _currentLayoutMode = LAYOUT_MODE_DEFAULT;
         _isUpperCase = false;
-        _draw(_baseLayout, _currentInputType, _layoutMode, _isUpperCase);
+        _draw(
+          _baseLayoutName, _currentInputType,
+          _currentLayoutMode, _isUpperCase
+        );
 
-/* XXX: Not yet implemented
-        if (Keyboards[_baseLayout].type == 'ime') {
-          if (this.currentEngine.show) {
-            this.currentEngine.show(_currentInputType);
+        if (Keyboards[_baseLayoutName].type == 'ime') {
+          if (_currentEngine().show) {
+            _currentEngine().show(_currentInputType);
           }
         }
-*/
 
         break;
 
@@ -570,13 +653,6 @@ const IMEController = (function() {
           IMERender.ime.classList.add('candidate-panel');
           IMERender.ime.classList.remove('full-candidate-panel');
         }
-        _updateTargetWindowHeight();
-        break;
-
-      case DOT_COM:
-        ('.com').split('').forEach((function sendDotCom(key) {
-          window.navigator.mozKeyboard.sendKey(0, key.charCodeAt(0));
-        }).bind(this));
         break;
 
       case KeyEvent.DOM_VK_CAPS_LOCK:
@@ -586,8 +662,10 @@ const IMEController = (function() {
           _isWaitingForSecondTap = false;
 
           _isUpperCase = _isUpperCaseLocked = true;
-          IMERender.setUpperCaseLock(true);
-          _draw(_baseLayout, _currentInputType, _layoutMode, _isUpperCase);
+          _draw(
+            _baseLayoutName, _currentInputType,
+            _currentLayoutMode, _isUpperCase
+          );
 
         // normal behavior: set timeut for second tap and toggle caps
         } else {
@@ -604,16 +682,27 @@ const IMEController = (function() {
           // toggle caps
           _isUpperCase = !_isUpperCase;
           _isUpperCaseLocked = false;
-          IMERender.setUpperCaseLock(false);
-          _draw(_baseLayout, _currentInputType, _layoutMode, _isUpperCase);
+          _draw(
+            _baseLayoutName, _currentInputType,
+            _currentLayoutMode, _isUpperCase
+          );
         }
+
+        // keyboard updated: all buttons recreated so event target is lost.
+        var capsLockKey = document.querySelector(
+          'button[data-keycode="'+KeyboardEvent.DOM_VK_CAPS_LOCK+'"]'
+        );
+        IMERender.setUpperCaseLock(
+          capsLockKey,
+          _isUpperCaseLocked ? 'locked' : _isUpperCase
+        );
 
         break;
 
       case KeyEvent.DOM_VK_RETURN:
-        if (Keyboards[_baseLayout].type == 'ime' &&
-            _layoutMode === LAYOUT_MODE_DEFAULT) {
-          this.currentEngine.click(keyCode);
+        if (Keyboards[_baseLayoutName].type == 'ime' &&
+            _currentLayoutMode === LAYOUT_MODE_DEFAULT) {
+          _currentEngine().click(keyCode);
           break;
         }
 
@@ -622,14 +711,14 @@ const IMEController = (function() {
 
       // To handle the case when double tapping the space key
       case KeyEvent.DOM_VK_SPACE:
-        if (this.isWaitingForSpaceSecondTap &&
-            !this.isContinousSpacePressed) {
+        if (_isWaitingForSpaceSecondTap &&
+            !_isContinousSpacePressed) {
 
-          if (Keyboards[_baseLayout].type == 'ime' &&
-            _layoutMode === LAYOUT_MODE_DEFAULT) {
+          if (Keyboards[_baseLayoutName].type == 'ime' &&
+            _currentLayoutMode === LAYOUT_MODE_DEFAULT) {
 
             //TODO: need to define the inteface for double tap handling
-            //this.currentEngine.doubleTap(keyCode);
+            //_currentEngine().doubleTap(keyCode);
             break;
           }
 
@@ -641,27 +730,27 @@ const IMEController = (function() {
           window.navigator.mozKeyboard.sendKey(0, 46);
           window.navigator.mozKeyboard.sendKey(0, keyCode);
 
-          delete this.isWaitingForSpaceSecondTap;
+          _isWaitingForSpaceSecondTap = false;
 
           // a flag to prevent continous replacement of space with "."
-          this.isContinousSpacePressed = true;
+          _isContinousSpacePressed = true;
           break;
         }
 
-        this.isWaitingForSpaceSecondTap = true;
+        _isWaitingForSpaceSecondTap = true;
 
         window.setTimeout(
           (function removeSpaceDoubleTapTimeout() {
-            delete this.isWaitingForSpaceSecondTap;
+            _isWaitingForSpaceSecondTap = false;
           }).bind(this),
-          this.kSpaceDoubleTapTimeout
+          _kSpaceDoubleTapTimeout
         );
 
-        this.handleMouseDownEvent(keyCode);
+        _handleMouseDownEvent(keyCode);
         break;
 
       default:
-        this.handleMouseDownEvent(keyCode);
+        _handleMouseDownEvent(keyCode);
         break;
 
     }
@@ -678,8 +767,8 @@ const IMEController = (function() {
   };
 
   function _reset() {
-    // TODO: _baseLayout is only set by IMEManager (it should not be mine)
-    _layoutMode = LAYOUT_MODE_DEFAULT;
+    // TODO: _baseLayoutName is only set by IMEManager (it should not be mine)
+    _currentLayoutMode = LAYOUT_MODE_DEFAULT;
     _isUpperCase = false;
   }
 
@@ -690,9 +779,11 @@ const IMEController = (function() {
       if (callback)
         IMERender.ime.addEventListener(event, callback.bind(this));
     }
+    _dimensionsObserver.observe(IMERender.ime, _dimensionsObserverConfig);
   }
 
   function _uninit() {
+    _dimensionsObserver.disconnect();
     for (event in _imeEvents) {
       var callback = _imeEvents[event] || null;
       if (callback)
@@ -709,83 +800,86 @@ const IMEController = (function() {
   }
 
   function _draw(baseLayout, inputType, layoutMode, uppercase) {
-    baseLayout = baseLayout || _baseLayout;
+    baseLayout = baseLayout || _baseLayoutName;
     inputType = inputType || _currentInputType;
     layoutMode = layoutMode || _currentLayout;
     uppercase = uppercase || false;
 
-    _currentLayout = _buildLayout(baseLayout, inputType, layoutMode, uppercase);
-    IMERender.draw(_currentLayout);
-    _updateTargetWindowHeight();
+    _currentLayout = _buildLayout(baseLayout, inputType, layoutMode);
+
+    if (_severalLanguages())
+      IMERender.draw(
+        _currentLayout, baseLayout,
+        _onScroll,
+        {uppercase: uppercase, getUpperCaseValue: _getUpperCaseValue}
+      );
+    else
+      IMERender.draw(
+        _currentLayout, undefined,
+        _onScroll,
+        {uppercase: uppercase, getUpperCaseValue: _getUpperCaseValue}
+      );
+  }
+
+  function _handleMouseDownEvent(keyCode) {
+    if (Keyboards[_baseLayoutName].type == 'ime' &&
+        _currentLayoutMode == LAYOUT_MODE_DEFAULT) {
+
+      _currentEngine().click(keyCode);
+      return;
+    }
+
+    window.navigator.mozKeyboard.sendKey(0, keyCode);
+
+    if (_isUpperCase &&
+        !_isUpperCaseLocked && _currentLayoutMode === LAYOUT_MODE_DEFAULT) {
+
+      _isUpperCase = false;
+      _draw(
+        _baseLayoutName, _currentInputType,
+        _currentLayoutMode, _isUpperCase
+      );
+    }
   }
 
   return {
-    // TODO: IMEngines are other kind of controllers, but now they are like
-    // controller's plugins. Maybe refactor is required as well but not now.
-
     // IME Engines are self registering here.
-    IMEngines: {},
-    get currentEngine() {
-      return this.IMEngines[Keyboards[_baseLayout].imEngine];
-    },
+    get IMEngines() { return _IMEngines; },
 
-    // Taps the space key twice within kSpaceDoubleTapTimeoout
-    // to produce a "." followed by a space
-    kSpaceDoubleTapTimeout: 700,
-
-    get currentKeyboard() {
-      return _baseLayout;
-    },
-
-    set currentKeyboard(value) {
-      _baseLayout = value;
-    },
+    get currentKeyboard() { return _baseLayoutName; },
+    set currentKeyboard(value) { _baseLayoutName = value; },
 
     init: _init,
     uninit: _uninit,
 
     showIME: function(type) {
       delete IMERender.ime.dataset.hidden;
-      _currentInputType = _mapType(type); // TODO: this should be unneccesary
-      _draw(_baseLayout, _currentInputType, _layoutMode);
+      IMERender.ime.classList.remove('hide');
 
-/* XXX: Not yet implemented
-      if (Keyboards[_baseLayout].type == 'ime') {
-        if (this.currentEngine.show) {
-          this.currentEngine.show(type);
+      _currentInputType = _mapType(type);
+      _draw(
+        _baseLayoutName, _currentInputType,
+        _currentLayoutMode, _isUpperCase
+      );
+
+      if (Keyboards[_baseLayoutName].type == 'ime') {
+        if (_currentEngine().show) {
+          _currentEngine().show(type);
         }
       }
-*/
     },
-    
+
     hideIME: function km_hideIME(imminent) {
-      if (IMERender.ime.dataset.hidden)
-        return;
-
-      IMERender.ime.dataset.hidden = 'true';
-      _reset();
-      _layoutMode = LAYOUT_MODE_DEFAULT;
-
-      if (imminent) {
-        var ime = IMERender.ime;
-        ime.classList.add('imminent');
-        window.setTimeout(function remoteImminent() {
-          ime.classList.remove('imminent');
-        }, 0);
-      }
+      IMERender.ime.classList.add('hide');
+      IMERender.hideIME(imminent);
     },
 
     onResize: function(nWidth, nHeight, fWidth, fHeihgt) {
       if (IMERender.ime.dataset.hidden)
         return;
 
-/*
-      // we presume that the targetWindow has been restored by
-      // window manager to full size by now.
-      IMERender.getTargetWindowMetrics();
-      console.log('onResize');
-      _draw();
-*/
+      IMERender.resizeUI();
+      _updateTargetWindowHeight();
     },
 
     loadKeyboard: function km_loadKeyboard(name) {
@@ -805,15 +899,13 @@ const IMEController = (function() {
 
       var script = document.createElement('script');
       script.src = sourceDir + imEngine + '/' + imEngine + '.js';
-      // TODO: Remvoe variable self
-      var self = IMERender;
       var glue = {
         path: sourceDir + imEngine,
         sendCandidates: function(candidates) {
-          self.showCandidates(candidates);
+          IMERender.showCandidates(candidates);
         },
         sendPendingSymbols: function(symbols) {
-          self.showPendingSymbols(symbols);
+          IMERender.showPendingSymbols(symbols);
         },
         sendKey: function(keyCode) {
           switch (keyCode) {
@@ -832,7 +924,7 @@ const IMEController = (function() {
             this.sendKey(str.charCodeAt(i));
         },
         alterKeyboard: function(keyboard) {
-          self.updateLayout(keyboard);
+          _draw(keyboard, _currentInputType, _currentLayoutMode, _isUpperCase);
         }
       };
 
@@ -842,22 +934,7 @@ const IMEController = (function() {
       }).bind(this));
 
       document.body.appendChild(script);
-    },
-
-    handleMouseDownEvent: function km_handleMouseDownEvent(keyCode) {
-      if (Keyboards[_baseLayout].type == 'ime' &&
-          !_layoutMode) {
-            this.currentEngine.click(keyCode);
-            return;
-          }
-
-      window.navigator.mozKeyboard.sendKey(0, keyCode);
-
-      if (_isUpperCase &&
-          !_isUpperCaseLocked && _layoutMode === LAYOUT_MODE_DEFAULT) {
-            _isUpperCase = false;
-            _draw(_baseLayout, _currentInputType, _layoutMode, _isUpperCase);
-          }
     }
+
   };
 })();
