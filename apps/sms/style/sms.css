@@ -5,7 +5,7 @@ html, body {
   overflow-x: hidden;
   overflow-y: hidden;
 
-  font-size: 7.3px; /** 10px aiming at devices with 219dpi, 7.3px for 160dpi, change when needed */
+  font-size: 10px; /** 10px aiming at devices with 219dpi, 7.3px for 160dpi, change when needed */
 }
 
 body {

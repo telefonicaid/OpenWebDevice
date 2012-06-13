@@ -519,6 +519,8 @@ var ConversationView = {
   },
 
   init: function cv_init() {
+    this.delNumList = [];
+    
     if (navigator.mozSms)
       navigator.mozSms.addEventListener('received', this);
 
@@ -647,12 +649,12 @@ var ConversationView = {
       for (var i = 0; i < messages.length; i++) {
         var msg = messages[i];
 
-        var uuid = msg.hasOwnProperty('uuid') ? msg.uuid : '';
-        var dataId = 'data-id="' + uuid + '"';
+        //var uuid = msg.hasOwnProperty('uuid') ? msg.uuid : '';
+        var dataId = msg.id; // uuid
 
         var outgoing = (msg.delivery == 'sent' || msg.delivery == 'sending');
         var num = outgoing ? msg.receiver : msg.sender;
-        var dataNum = 'data-num="' + num + '"';
+        var dataNum = num;
 
         var className = (outgoing ? 'receiver' : 'sender') + '"';
         if (msg.delivery == 'sending')
@@ -661,9 +663,9 @@ var ConversationView = {
         var pic = 'style/images/contact-placeholder.png';
 
         var body = msg.body.replace(/\n/g, '<br />');
-        fragment += '<div class="message-block">' + 
+        fragment += '<div class="message-block" ' + 'data-num="' + dataNum + '" data-id="' + dataId + '">' +
                       '<input type="checkbox" class="fake-checkbox"/>' + '<span></span>' +
-                      '<div class="message-container ' + className + ' ' + dataNum + ' ' + dataId + '>' +                      
+                      '<div class="message-container ' + className + '>' +
                         '<div class="text">' + escapeHTML(body) + '</div>' +
                         '<div class="time" data-time="' + msg.timestamp.getTime() + '">' +
                             prettyDate(msg.timestamp) + '</div>' +
@@ -678,13 +680,64 @@ var ConversationView = {
     }, filter, true);
   },
 
-  deleteMessage: function cv_deleteMessage(evt) {
-    var uuid = evt.target.getAttribute('data-id');
-    if (!uuid)
+  deleteMessage: function cv_deleteMessage(messageId) {
+    if (!messageId) 
       return;
-
-    MessageManager.delete(uuid);
-    this.showConversation(this.filter);
+    
+    console.log("########### BORRANDO MENSAJE "+messageId);
+    MessageManager.deleteMessage(messageId,function(result){
+        if (result) {
+          console.log("Message id: "+messageId+" deleted");
+        } else {
+          console.log("Impossible to delete message ID="+messageId);
+        }
+      });
+  },
+  /*********/
+ // deleteMessage: function mm_deleteMessage(id, callback) {
+    // var req = navigator.mozSms.delete(id);
+    // req.onsuccess = function onsuccess() {
+      // callback(req.result);
+    // };
+// 
+    // req.onerror = function onerror() {
+      // var msg = 'Message deleting error in the database. Error: ' + req.errorCode;
+      // console.log(msg);
+      // callback(null);
+    // };
+  // },
+// 
+  // /*
+    // TODO: If the messages could not be deleted completely,
+    // conversation list page will also update withot notification currently.
+    // May need more infomation for user that the messages were not
+    // removed completely.
+  // */
+  // deleteMessages: function mm_deleteMessages(list, callback) {
+    // if (list.length > 0) {
+      // this.deleteMessage(list.shift(), function(result) {
+        // this.deleteMessages(list, callback);
+      // }.bind(this));
+    // } else
+      // callback();
+  // }
+ /************/
+  deleteMessages: function cv_deleteMessages() {
+    if (!this.delNumList || this.delNumList.length == 0)
+      return;
+    for (var i=0; i < this.delNumList.length; i++) {
+      this.deleteMessage(this.delNumList[i]);//TODO shift[i]);
+    };
+    this.delNumList = [];
+    this.showConversation(this.title.num);
+    ConversationListView.updateConversationList();
+    this.exitEditMode();
+    /**
+     * Need to check few things with UX:
+     * - Exit edit mode when deleting the list?
+     * - Exit only if no more messages?
+     * - If no messages at all, should we return to ConverList? 
+     */
   },
 
   handleEvent: function cv_handleEvent(evt) {
@@ -751,12 +804,12 @@ var ConversationView = {
        case 'mousedown':
         switch (evt.currentTarget) {
           case this.doneButton:
-            console.log("******** DONE");
-            window.location.hash = "#num="+this.title.num;
+            this.exitEditMode();
             break;
           case this.deleteButton:
+            // DELETE CHOSEN MESSAGES
             console.log("******** DELETE");
-            this.executeMessageDelete();
+            this.deleteMessages();
             break;
           case this.deleteAllButton:
             console.log("******** DELETE ALL");
@@ -764,7 +817,7 @@ var ConversationView = {
             break;
           case this.acceptDialogButton:
             console.log("******** ACCEPT");
-            this.executeAllMessagesDelete();
+            this.deleteAllMessages();
             break;
           case this.cancelDialogButton:
             console.log("******** CANCEL");
@@ -773,6 +826,11 @@ var ConversationView = {
         }
         break;
     }
+  },
+  
+  exitEditMode: function cv_exitEditMode(){
+    // Only from a existing message thread window (otherwise, no title.num)
+    window.location.hash = "#num="+this.title.num;
   },
   
   toggleEditMode: function cv_toggleEditMode(show) {
@@ -799,10 +857,16 @@ var ConversationView = {
     evt.preventDefault();
     cb.checked = !cb.checked;
     console.log("************ CHECKBOX CHANGE");
+    console.log("ID-"+evt.target.getAttribute('data-id'));
+    var id = parseFloat(evt.target.getAttribute('data-id'));
+    if (!id){ 
+      console.log("SMS DELETE ERROR: Message has no id");
+      return;
+    }
     if (cb.checked) {
-      this.delNumList.push(evt.target.dataset.num);
+      this.delNumList.push(id);
     } else {
-      this.delNumList.splice(this.delNumList.indexOf(evt.target.dataset.num), 1);
+      this.delNumList.splice(this.delNumList.indexOf(id), 1);
     }
   },
   
