@@ -829,6 +829,9 @@ var ConversationView = {
   },
   
   exitEditMode: function cv_exitEditMode(){
+    // in case user ticks a message and then Done, we need to empty the deletion list
+    this.delNumList = [];
+    
     // Only from a existing message thread window (otherwise, no title.num)
     window.location.hash = "#num="+this.title.num;
   },
