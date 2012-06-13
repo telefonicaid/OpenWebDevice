@@ -26,9 +26,11 @@
   </head>
 
   <body class="hidden">
+    <!-- Single conversation view -->
     <div id="view" class="panel">
       <div id="view-toolbar" class="toolbar toolbar-top">
-        <a href="#" id="view-back" class="button text-button" data-l10n-id="back">Back</a>
+        <a href="#" id="view-back" class="button text-button edit-hide" data-l10n-id="back">Back</a>
+        <button id="view-done-button" class="button text-button edit-show" data-l10n-id="done">Done</button>
         <a href="#edit" id="view-edit-button" class="button text-button edit-hide" data-l10n-id="edit">Edit</a>
         <a href="#" id="view-add-button" class="button text-button edit-hide" data-l10n-id="add-contact">Add</a>
         <h2 id="view-name"></h2>
@@ -39,15 +41,22 @@
       </div>
       <div id="view-bottom-toolbar" class="toolbar toolbar-bottom">
         <div id="view-bottom-toolbar-panel" class="toolbar-panel">
-          <div id="view-msg-text-container" class="toolbar-panel-item">
+          <div id="view-msg-text-container" class="toolbar-panel-item edit-hide">
             <textarea type="text" id="view-msg-text"></textarea>
           </div>
-          <div id="view-msg-send-container" class="toolbar-panel-fixed-item">
+          <div id="view-msg-send-container" class="toolbar-panel-fixed-item edit-hide">
             <button id="view-msg-send" class="button text-button" data-l10n-id="send">Send</button>
           </div>
-        </div>
+          <button id="view-delete-all-button" class="button text-button edit-show"
+                  data-l10n-id="delete-all">Delete all</button>
+          <button id="view-delete-button" class="button text-button edit-show"
+                  data-l10n-id="delete">Delete</button>
+        </div> 
       </div>
+
     </div>
+    
+    <!-- Conversations List view -->
     <div id="msg-conversations" class="panel">
       <div id="msg-toolbar" class="toolbar toolbar-top">
         <a href="#" id="msg-conversations-back" class="button text-button edit-show" data-l10n-id="back">Back</a>
@@ -61,6 +70,7 @@
       </div>
       <div id="msg-conversations-list" class="list">
       </div>
+
       <div id="msg-bottom-toolbar" class="toolbar toolbar-bottom edit-show">
         <div id="msg-new-message-container">
           <button id="msg-delete-all-button" class="button text-button edit-show"
@@ -71,6 +81,26 @@
                   data-l10n-id="delete">Delete</button>
         </div>
       </div>
+    </div>
+    
+    <!-- Confirmation message for dangerous operations on conversation list-->
+    <div id="msg-confirmation-panel" class="panel confirmation-panel">
+        <div id="msg-confirmation-dialog" class="confirmation-dialog">
+            <p>Are you sure you want to clear all conversations</p>
+            <h2>This cannot be undone</h2>
+            <button id="msg-cancel-button" class="button text-button">Cancel</button>
+            <button id="msg-accept-button" class="button text-button">Yes</button>
+        </div>
+    </div>
+    
+    <!-- Confirmation message for dangerous operations on conversation view-->
+    <div id="view-confirmation-panel" class="panel confirmation-panel">
+        <div id="view-confirmation-dialog" class="confirmation-dialog">
+            <p>Are you sure you want to clear all messages from this conversation</p>
+            <h2>This cannot be undone</h2>
+            <button id="view-cancel-button" class="button text-button">Cancel</button>
+            <button id="view-accept-button" class="button text-button">Yes</button>
+        </div>
     </div>
   </body>
 </html>
