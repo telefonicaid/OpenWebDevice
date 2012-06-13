@@ -90,12 +90,12 @@ var ConversationListView = {
 
   get cancelDialogButton() {
     delete this.cancelDialogButton;
-    return this.cancelDialogButton = document.getElementById('cancel-button');
+    return this.cancelDialogButton = document.getElementById('msg-cancel-button');
   },
 
   get acceptDialogButton() {
     delete this.acceptDialogButton;
-    return this.acceptDialogButton = document.getElementById('accept-button');
+    return this.acceptDialogButton = document.getElementById('msg-accept-button');
 
   },
 
@@ -356,7 +356,6 @@ var ConversationListView = {
             this.showConfirmationDialog();
             break;
           case this.acceptDialogButton:
-
             this.executeAllMessagesDelete();
             break;
           case this.cancelDialogButton:
@@ -366,10 +365,8 @@ var ConversationListView = {
         break;
 
       case 'click':
-        console.log("************ CLICK EVENT TRIGGERED");
         // When Event listening target is this.view and clicked target has a fake-input child.
-        if (evt.currentTarget == this.view && evt.target.href) { //getElementsByTagName('input')[0].className == 'fake-checkbox') {
-          console.log("************ ON A HREF ITEM");
+        if (evt.currentTarget == this.view && evt.target.href) { 
           this.onListItemClicked(evt);
         }
         break;
@@ -387,9 +384,7 @@ var ConversationListView = {
     this.delNumList = [];
 
     var inputElements_list = document.getElementById('msg-conversations-list').getElementsByTagName('a');
-    console.log('******************* Detectados ' + inputElements_list.length + ' elementos');
     for (var i = 0; i < inputElements_list.length; i++) {
-      console.log('******* Numero: ' + inputElements_list[i].dataset.num);
       this.delNumList.push(inputElements_list[i].dataset.num);
     }
 
@@ -399,12 +394,12 @@ var ConversationListView = {
 
   showConfirmationDialog: function cl_showConfirmationDialog() {
     var bodyclassList = document.body.classList;
-    bodyclassList.add('confirmation-pending');
+    bodyclassList.add('msg-confirmation-pending');
   },
 
   hideConfirmationDialog: function cl_hideConfirmationDialog() {
     var bodyclassList = document.body.classList;
-    bodyclassList.remove('confirmation-pending');
+    bodyclassList.remove('msg-confirmation-pending');
   },
 
   deleteMessages: function cl_deleteMessages(numberList) {
@@ -442,22 +437,17 @@ var ConversationListView = {
   },
 
   onListItemClicked: function cl_onListItemClicked(evt) {
-    /********************/
-    console.log("************ ITEM CLICKED");
     var cb = evt.target.getElementsByClassName('fake-checkbox')[0];
     if (!cb){
-      console.log("************ NO FAKE CHECKBOXES INSIDE");
       return;
     }
 
     if (!document.body.classList.contains('edit-mode')){
-      console.log("************ NOT EDIT MODE");
       return;
     }
 
     evt.preventDefault();
     cb.checked = !cb.checked;
-    console.log("************ CHECKBOX CHANGE");
     if (cb.checked) {
       this.delNumList.push(evt.target.dataset.num);
     } else {
@@ -505,12 +495,12 @@ var ConversationView = {
 
   get cancelDialogButton() {
     delete this.cancelDialogButton;
-    return this.cancelDialogButton = document.getElementById('cancel-button');
+    return this.cancelDialogButton = document.getElementById('view-cancel-button');
   },
 
   get acceptDialogButton() {
     delete this.acceptDialogButton;
-    return this.acceptDialogButton = document.getElementById('accept-button');
+    return this.acceptDialogButton = document.getElementById('view-accept-button');
   },
   
   get sendButton() {
@@ -530,6 +520,8 @@ var ConversationView = {
     this.doneButton.addEventListener('mousedown', this);
     this.deleteButton.addEventListener('mousedown', this);
     this.deleteAllButton.addEventListener('mousedown', this);
+    this.acceptDialogButton.addEventListener('mousedown', this);
+    this.cancelDialogButton.addEventListener('mousedown', this);
 
     this.input.addEventListener('input', this.updateInputHeight.bind(this));
     this.view.addEventListener('click', this);
@@ -684,7 +676,6 @@ var ConversationView = {
     if (!messageId) 
       return;
     
-    console.log("########### BORRANDO MENSAJE "+messageId);
     MessageManager.deleteMessage(messageId,function(result){
         if (result) {
           console.log("Message id: "+messageId+" deleted");
@@ -693,35 +684,7 @@ var ConversationView = {
         }
       });
   },
-  /*********/
- // deleteMessage: function mm_deleteMessage(id, callback) {
-    // var req = navigator.mozSms.delete(id);
-    // req.onsuccess = function onsuccess() {
-      // callback(req.result);
-    // };
-// 
-    // req.onerror = function onerror() {
-      // var msg = 'Message deleting error in the database. Error: ' + req.errorCode;
-      // console.log(msg);
-      // callback(null);
-    // };
-  // },
-// 
-  // /*
-    // TODO: If the messages could not be deleted completely,
-    // conversation list page will also update withot notification currently.
-    // May need more infomation for user that the messages were not
-    // removed completely.
-  // */
-  // deleteMessages: function mm_deleteMessages(list, callback) {
-    // if (list.length > 0) {
-      // this.deleteMessage(list.shift(), function(result) {
-        // this.deleteMessages(list, callback);
-      // }.bind(this));
-    // } else
-      // callback();
-  // }
- /************/
+
   deleteMessages: function cv_deleteMessages() {
     if (!this.delNumList || this.delNumList.length == 0)
       return;
@@ -732,12 +695,19 @@ var ConversationView = {
     this.showConversation(this.title.num);
     ConversationListView.updateConversationList();
     this.exitEditMode();
-    /**
-     * Need to check few things with UX:
-     * - Exit edit mode when deleting the list?
-     * - Exit only if no more messages?
-     * - If no messages at all, should we return to ConverList? 
-     */
+  },
+  
+  deleteAllMessages: function cv_deleteMessages() {
+    // Clean current list in case messages checked
+    this.delNumList = [];
+
+    var inputElements_list = document.getElementById('view-list').getElementsByClassName('message-block');
+    for (var i = 0; i < inputElements_list.length; i++) {
+      this.delNumList.push(parseFloat(inputElements_list[i].dataset.id));
+    }
+
+    this.deleteMessages();
+    this.hideConfirmationDialog();
   },
 
   handleEvent: function cv_handleEvent(evt) {
@@ -789,16 +759,10 @@ var ConversationView = {
         break;
         
       case 'click':
-        console.log("************ CLICK EVENT TRIGGERED");
-        console.log("TARGET = "+evt.currentTarget);
-        console.log("TIPO = "+evt.target.className);
-        console.log("PADRE = "+evt.target.parentNode.className);
-        console.log("message? = "+evt.target.className.indexOf('message'));
         // When Event listening target is this.view and clicked target is a message.
         if (evt.currentTarget == this.view && ~evt.target.className.indexOf('message')) {
-          console.log("************ ON A LIST ITEM WITH SENDER/RECEIVER PARENT");
           this.onListItemClicked(evt);
-        } else console.log("NOPE");
+        }
         break;
         
        case 'mousedown':
@@ -807,20 +771,15 @@ var ConversationView = {
             this.exitEditMode();
             break;
           case this.deleteButton:
-            // DELETE CHOSEN MESSAGES
-            console.log("******** DELETE");
             this.deleteMessages();
             break;
           case this.deleteAllButton:
-            console.log("******** DELETE ALL");
             this.showConfirmationDialog();
             break;
           case this.acceptDialogButton:
-            console.log("******** ACCEPT");
             this.deleteAllMessages();
             break;
           case this.cancelDialogButton:
-            console.log("******** CANCEL");
             this.hideConfirmationDialog();
             break;
         }
@@ -828,6 +787,16 @@ var ConversationView = {
     }
   },
   
+  showConfirmationDialog: function cv_showConfirmationDialog() {
+    var bodyclassList = document.body.classList;
+    bodyclassList.add('view-confirmation-pending');
+  },
+
+  hideConfirmationDialog: function cv_hideConfirmationDialog() {
+    var bodyclassList = document.body.classList;
+    bodyclassList.remove('view-confirmation-pending');
+  },
+
   exitEditMode: function cv_exitEditMode(){
     // in case user ticks a message and then Done, we need to empty the deletion list
     this.delNumList = [];
@@ -845,25 +814,19 @@ var ConversationView = {
   },
   
   onListItemClicked: function cv_onListItemClicked(evt) {
-    /********************/
-    console.log("************ ITEM CLICKED");
     var cb = evt.target.getElementsByClassName('fake-checkbox')[0];
     if (!cb){
-      console.log("************ NO FAKE CHECKBOXES INSIDE");
       return;
     }
     if (!document.body.classList.contains('edit-mode')){
-      console.log("************ NOT EDIT MODE");
       return;
     }
     
     evt.preventDefault();
     cb.checked = !cb.checked;
-    console.log("************ CHECKBOX CHANGE");
     console.log("ID-"+evt.target.getAttribute('data-id'));
     var id = parseFloat(evt.target.getAttribute('data-id'));
-    if (!id){ 
-      console.log("SMS DELETE ERROR: Message has no id");
+    if (!id){
       return;
     }
     if (cb.checked) {
