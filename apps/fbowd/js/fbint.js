@@ -22,15 +22,9 @@ if(typeof window.owdFbInt === 'undefined') {
 
       // The access token
       var accessToken;
-      // Application Id
-      var appID = '323630664378726';
-      // hash to get the token
-      var hash = window.location.hash;
+
       // Access Token parameter
       var ACC_T = 'access_token';
-
-      // Oauth dialog URI
-      var oauthDialogUri = 'https://m.facebook.com/dialog/oauth?';
 
       // Contacts selected to be sync to the address book
       var selectedContacts = [];
@@ -39,8 +33,12 @@ if(typeof window.owdFbInt === 'undefined') {
       var myFriends;
 
       // Query that retrieves the information about friends
-      var FRIENDS_QUERY = 'SELECT uid,name,birthday_date,email FROM user\
-                WHERE uid in (SELECT uid1 FROM friend WHERE uid2=me()) ORDER BY name';
+      var FRIENDS_QUERY = 'SELECT uid, name, birthday_date, email, \
+                        relationship_status, significant_other_id, work, \
+                        education \
+                        FROM user \
+                        WHERE uid in (SELECT uid1 FROM friend WHERE uid2=me()) \
+                        ORDER BY name';
 
       var selButton = document.querySelector('#selunsel');
       var contactList = document.querySelector('#myFbContacts');
@@ -57,14 +55,14 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     owdFbInt.init = function() {
-      window.console.log("The hash is: ", hash);
       window.console.log('document.location.search: ',document.location.search);
 
       if(document.location.search.indexOf('redirect') !== -1
                     && document.location.toString().indexOf('logout') === -1) {
 
         window.console.log('Coming from a redirection!!!');
-        owdFbInt.start();
+
+        this.start();
       }
     }
 
@@ -75,7 +73,7 @@ if(typeof window.owdFbInt === 'undefined') {
      */
     function prepareInfiniteScroll() {
       InfiniteScroll.create ({
-        element: '#main',
+        element: '#content',
         callback: loadMoreFriends
       });
 
@@ -329,13 +327,15 @@ if(typeof window.owdFbInt === 'undefined') {
       // The contact was not previously loaded on the DOM
       if(img === null) {
         img = document.createElement('img');
+        img.crossOrigin = "Anonymous";
+
         img.src = 'https://graph.facebook.com/' + uid + '/picture?type=square';
         // A timeout is setup just in case the photo is not loaded
         var timeoutId = window.setTimeout(function() {
                           img.onload = null; cb(null); img.src = ''; },5000);
 
         img.onload = function() {
-          window.cancelTimeout(timeoutId);
+          window.clearTimeout(timeoutId);
           cb(img);
         }
       }
@@ -394,6 +394,77 @@ if(typeof window.owdFbInt === 'undefined') {
         (importSlice.bind(this))();
       }
 
+      function getWorksAt(fbdata) {
+        var ret = '';
+        if(fbdata.work && fbdata.work.length > 0) {
+          // It is assumed that first is the latest
+          ret = fbdata.work[0].employer.name;
+        }
+
+        return ret;
+      }
+
+      function getStudiedAt(fbdata) {
+        var ret = '';
+
+        if(fbdata.education && fbdata.education.length > 0) {
+          var university = fbdata.education.filter(function(d) {
+            var e = false;
+            if(d.school.type === 'College') {
+              e = true;
+            }
+            return e;
+          });
+
+          if(university.length > 0) {
+            ret = university[0].school.name;
+          }
+          else {
+            ret = fbdata.education[0].school.name;
+          }
+        }
+
+        return ret;
+      }
+
+      function getMarriedTo(fbdata) {
+        return '';
+      }
+
+      /**
+       *  Facebook dates are MM/DD/YYYY
+       *
+       *
+       */
+      function getBirthDate(sbday) {
+        var ret = new Date();
+
+        var imonth = sbday.indexOf('/');
+        var smonth = sbday.substring(0,imonth);
+
+        window.console.log('Birthday month:',smonth);
+
+        var iyear = sbday.lastIndexOf('/');
+        if(iyear === imonth) {
+          iyear = sbday.length;
+        }
+        var sday = sbday.substring(imonth + 1,iyear);
+
+        window.console.log('Birthday day:',sday);
+
+        var syear = sbday.substring(iyear + 1,sbday.length);
+        window.console.log('Birthday year:',syear);
+
+        ret.setDate(parseInt(sday));
+        ret.setMonth(parseInt(smonth),parseInt(sday));
+
+        if(syear && syear.length > 0) {
+          ret.setYear(parseInt(syear));
+        }
+
+        return ret;
+      }
+
     /**
      *  Persists a group of contacts
      *
@@ -405,35 +476,62 @@ if(typeof window.owdFbInt === 'undefined') {
       window.console.log('Contacts to add: ',totalContacts);
 
       cgroup.forEach(function(f) {
-        var contact = new mozContact();
+        var contact;
+        if(navigator.mozContacts) {
+          contact = new mozContact();
+        }
 
-        var photo = getContactPhoto(f.uid,function(photo) {
+      var cfdata = f;
+
+       getContactPhoto(cfdata.uid,function(photo) {
           // When photo is ready this code will be executed
-          contact.init({ name: [f.name], bday:null, fbContact:true, sex:f.uid,
-          photo: [photo] });
-          var request = navigator.mozContacts.save(contact);
-          request.onsuccess = function() {
-            numResponses++;
-            window.console.log('Contact added!!!',numResponses);
 
-            if(numResponses === totalContacts) {
-              if(typeof doneCB === 'function') {
-                doneCB();
+          window.console.log('Photo: ',photo);
+
+          var worksAt = getWorksAt(cfdata);
+          var studiedAt = getStudiedAt(cfdata);
+          var marriedTo = getMarriedTo(cfdata);
+          var birthDate = null;
+          if(cfdata.birthday_date && cfdata.birthday_date.length > 0) {
+           birthDate = getBirthDate(cfdata.birthday_date);
+          }
+
+          window.console.log(cfdata.uid,worksAt,studiedAt,marriedTo,birthDate);
+
+          if(navigator.mozContacts) {
+
+            var fbInfo = {uid: cfdata.uid, marriedTo: marriedTo};
+
+            contact.init({ name: [cfdata.name] , category: ['facebook'],
+                              note: [JSON.stringify(fbInfo)],
+                                    photo: [photo],
+                                     bday: birthDate,
+                                     org: [worksAt,studiedAt]
+                                     });
+
+            var request = navigator.mozContacts.save(contact);
+            request.onsuccess = function() {
+              numResponses++;
+              window.console.log('Contact added!!!',numResponses);
+
+              if(numResponses === totalContacts) {
+                if(typeof doneCB === 'function') {
+                  doneCB();
+                }
               }
-            }
-          };
+            } /// onsuccess
 
-          request.onerror = function(e) {
-            numResponses++;
-            window.console.log('Contact Add error: ',numResponses);
+            request.onerror = function(e) {
+              numResponses++;
+              window.console.log('Contact Add error: ',numResponses);
 
-            if(numResponses === totalContacts) {
-              if(typeof doneCB === 'function') {
-                doneCB();
+              if(numResponses === totalContacts) {
+                if(typeof doneCB === 'function') {
+                  doneCB();
+                }
               }
-            }
-          };
-
+            };
+          }
         });  // getContactPhoto
       }); //forEach
     } // persistContactGroup
@@ -522,22 +620,13 @@ if(typeof window.owdFbInt === 'undefined') {
     function startOAuth() {
       clearStorage();
 
-      var queryParams = ['client_id=' + appID,
-                                'redirect_uri='
-                                    + encodeURIComponent(getLocation() + "?state=redirect"),
-                                'response_type=token',
-                                'scope=' + encodeURIComponent('friends_about_me,friends_birthday,email')];
-      var query = queryParams.join('&');
-      var url = oauthDialogUri + query;
-
-      window.console.log('URL: ', url);
-
-      document.location = url;
+      // This page will be in charge of handling authorization
+      document.location = 'fbint-auth.html';
     }
 
     window.console.log('OWD FB!!!!');
 
-    // Everything is initialized
+    fb.contacts.init();
     owdFbInt.init();
   }
   )(document);

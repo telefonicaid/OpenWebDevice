@@ -68,10 +68,15 @@ dd.input {
   width:100%;
 }
 
-#main {
+#content {
  clear:left;
  width:100%;
  height:90%;
+}
+
+#main {
+  width: 100%;
+  height:100%;
 }
 
 #curtain {
@@ -84,6 +89,7 @@ dd.input {
   z-index:1;
   display:none;
 }
+
 
 #welcome {
   position:absolute;
@@ -117,7 +123,7 @@ dd.input {
  height:100px;
 }
 
-#main {
+#content {
   z-index:2;
 }
 
@@ -130,6 +136,7 @@ body[data-state='waiting'] #main {
   opacity:0.6;
 }
 
+
 body[data-state='welcome'] #welcome {
   display:block;
 }
@@ -138,6 +145,8 @@ body[data-state='welcome'] #main {
   display:none;
 }
 
+
 body[data-state='welcome'] header {
   display:none;
 }
+

@@ -6,13 +6,21 @@
     <title>Facebook App</title>
     <link href="common.css" rel="stylesheet">
     <link href="style/fbint.css" rel="stylesheet">
+
     <script defer src="templates.js"></script>
     <script src="js/common-owd.js"></script>
     <script src="infinite-scroll.js"></script>
+
+    <script src="fb-api.js"></script>
+
     <link rel="stylesheet" href="infinite-scroll.css">
+
   </head>
 
   <body data-state='welcome'>
+
+  <section id="main">
+
     <header style="background:lightblue;float:left;width:100%">
       <h1 style="float:left;margin:0;padding:0">Facebook Friends</h1>
       <button style="float:left" type=button onclick="owdFbInt.ui.importAll(event)">Add</button>
@@ -20,7 +28,7 @@
       <button style="float:left" type=button onclick="owdFbInt.ui.logout()">Logout</button>
     </header>
 
-    <section id="main">
+    <section id="content">
       <ol id="myFbContacts" class="itemSet"
                                     onclick="owdFbInt.ui.selection(event)">
           <li data-template>
@@ -44,9 +52,11 @@
       </div>
     </section>
 
-    <section id="welcome">
+  </section> <!-- main -->
+
+    <section id="welcome" data-position="home">
       <div>
-        <button type=button onclick="owdFbInt.start()">Go To Facebook</button>
+        <button type=button onclick="owdFbInt.start()">Import Facebook Contacts</button>
       </div>
     </section>
 
