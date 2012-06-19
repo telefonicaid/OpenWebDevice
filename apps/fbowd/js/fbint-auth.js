@@ -105,7 +105,7 @@ if(typeof window.owdFbAuth === 'undefined') {
                                 'response_type=token',
                                 'scope=' + encodeURIComponent('friends_about_me,\
                                           friends_birthday,email,friends_education_history,\
-                                          friends_work_history,friends_status')];
+                                          friends_work_history,friends_status,friends_relationships')];
       var query = queryParams.join('&');
       var url = oauthDialogUri + query;
 

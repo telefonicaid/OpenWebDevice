@@ -27,18 +27,35 @@ if(typeof window.owdFbInt === 'undefined') {
       var ACC_T = 'access_token';
 
       // Contacts selected to be sync to the address book
-      var selectedContacts = [];
+      var selectedContacts = {};
 
       // The whole list of friends as an array
-      var myFriends;
+      var myFriends,myFriendsByUid;
+
+      // Partners
+      var friendsPartners;
 
       // Query that retrieves the information about friends
       var FRIENDS_QUERY = 'SELECT uid, name, birthday_date, email, \
                         relationship_status, significant_other_id, work, \
                         education \
                         FROM user \
-                        WHERE uid in (SELECT uid1 FROM friend WHERE uid2=me()) \
+                        WHERE uid IN (SELECT uid1 FROM friend WHERE uid2=me()) \
                         ORDER BY name';
+
+      // Query that retrieves information about the person in relationship with
+      var RELATIONSHIP_QUERY = 'SELECT uid,name from user WHERE uid IN\
+(select significant_other_id FROM user\
+ WHERE uid in\
+ (SELECT uid1 FROM friend WHERE uid2=me()) AND significant_other_id <> "")';
+
+      var REL_MULTIQ = 'SELECT uid, name from user WHERE uid IN \
+        (SELECT significant_other_id FROM #query1 \
+        wHERE significant_other_id <> "")';
+
+      var multiqObj = {query1: FRIENDS_QUERY, query2: REL_MULTIQ};
+
+      var multiQStr = JSON.stringify(multiqObj);
 
       var selButton = document.querySelector('#selunsel');
       var contactList = document.querySelector('#myFbContacts');
@@ -128,7 +145,7 @@ if(typeof window.owdFbInt === 'undefined') {
       var friendsService = 'https://graph.facebook.com/fql?';
 
       var params = [ACC_T + '=' + accessToken,
-                    'q' + '=' + FRIENDS_QUERY,
+                    'q' + '=' + encodeURIComponent(multiQStr),
                         'callback=owdFbInt.friendsReady'];
       var q = params.join('&');
 
@@ -137,6 +154,19 @@ if(typeof window.owdFbInt === 'undefined') {
       document.body.appendChild(jsonp);
 
       document.body.dataset.state = 'waiting';
+    }
+
+    /**
+     *  Creates the friends partners array for fast access to information
+     *
+     */
+    function parseFriendsPartners(data) {
+      var ret = {};
+      data.forEach(function(d) {
+        ret[d.uid.toString()] = d.name;
+      });
+
+      return ret;
     }
 
     /**
@@ -149,7 +179,16 @@ if(typeof window.owdFbInt === 'undefined') {
       if(typeof response.error === 'undefined') {
         window.console.log('Friends:',response);
 
-        myFriends = response.data;
+        myFriends = response.data[0].fql_result_set;
+
+        myFriendsByUid = {};
+
+        myFriends.forEach(function(f) {
+          myFriendsByUid[f.uid.toString()] = f;
+        });
+
+        // My friends partners
+        friendsPartners = parseFriendsPartners(response.data[1].fql_result_set);
 
         // Only append the first 10 friends to avoid collapsing the browser
         var pagedData = myFriends.slice(0,nextBlock);
@@ -179,9 +218,9 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     owdFbInt.ui.importAll = function(e) {
-      window.console.log('Importing all the contacts',selectedContacts.length);
+      window.console.log('Importing all the contacts',Object.keys(selectedContacts).length);
 
-      if(selectedContacts.length > 0) {
+      if(Object.keys(selectedContacts).length > 0) {
         owdFbInt.importAll(function() {
           window.console.log('All contacts have been imported');
           document.body.dataset.state = '';
@@ -206,7 +245,7 @@ if(typeof window.owdFbInt === 'undefined') {
 
       bulkSelection(true);
 
-      selectedContacts = myFriends.slice(0);
+      selectedContacts = myFriendsByUid;
 
       selButton.textContent = 'Unselect All';
       selButton.onclick = UI.unSelectAll;
@@ -225,7 +264,7 @@ if(typeof window.owdFbInt === 'undefined') {
       selButton.textContent = 'Select All';
       selButton.onclick = UI.selectAll;
 
-      selectedContacts = [];
+      selectedContacts = {};
     }
 
     /**
@@ -284,13 +323,11 @@ if(typeof window.owdFbInt === 'undefined') {
       if(ele.tagName === 'INPUT') {
         if(ele.checked === true) {
           window.console.log('Contact has been selected',ele.name);
-          selectedContacts.push(myFriends[ele.name]);
+          selectedContacts[ele.name] = myFriendsByUid[ele.name];
         }
         else {
             window.console.log('Contact has been unselected',ele.name);
-            selectedContacts = selectedContacts.filter(function(e) {
-              return e.uid !== myFriends[ele.name].uid;
-            });
+            delete selectedContacts[ele.name];
         }
       }
     }
@@ -349,8 +386,11 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      *
      */
-    var ContactsImporter = function(contacts) {
-      this.contacts = contacts;
+    var ContactsImporter = function(pcontacts) {
+      // The selected contacts
+      var contacts = pcontacts;
+      // The uids of the selected contacts
+     var kcontacts = Object.keys(contacts);
 
       var chunkSize = 10;
       var pointer = 0;
@@ -361,7 +401,7 @@ if(typeof window.owdFbInt === 'undefined') {
        *
        */
       function importSlice() {
-        var cgroup = contacts.slice(pointer,pointer + chunkSize);
+        var cgroup = kcontacts.slice(pointer,pointer + chunkSize);
           persistContactGroup(cgroup,function() {
             pointer += chunkSize; this.pending -= chunkSize;
             this.onsuccess(); }.bind(this) );
@@ -374,7 +414,7 @@ if(typeof window.owdFbInt === 'undefined') {
       this.continue = function() {
         if(this.pending > 0) {
           if(this.pending < chunkSize) {
-            var cgroup = contacts.slice(pointer,pointer + this.pending);
+            var cgroup = kcontacts.slice(pointer,pointer + this.pending);
             persistContactGroup(cgroup,function() { this.pending = 0;
                                                         this.onsuccess(); }.bind(this) );
           }
@@ -390,10 +430,14 @@ if(typeof window.owdFbInt === 'undefined') {
        */
       this.start = function() {
         pointer = 0;
-        this.pending = contacts.length;
+        this.pending = kcontacts.length;
         (importSlice.bind(this))();
       }
 
+      /**
+       * Auxiliary function to know where a contact works
+       *
+       */
       function getWorksAt(fbdata) {
         var ret = '';
         if(fbdata.work && fbdata.work.length > 0) {
@@ -404,6 +448,11 @@ if(typeof window.owdFbInt === 'undefined') {
         return ret;
       }
 
+
+      /**
+       *  Auxiliary function to know where a contact studied
+       *
+       */
       function getStudiedAt(fbdata) {
         var ret = '';
 
@@ -427,13 +476,26 @@ if(typeof window.owdFbInt === 'undefined') {
         return ret;
       }
 
+      /**
+       *  Calculates a friend's partner
+       *
+       */
       function getMarriedTo(fbdata) {
-        return '';
+        var ret = '';
+
+        window.console.log('Significant other id: ',fbdata.significant_other_id);
+
+        if(fbdata.significant_other_id) {
+          ret = friendsPartners[fbdata.significant_other_id];
+        }
+
+        return ret;
       }
 
       /**
        *  Facebook dates are MM/DD/YYYY
        *
+       *  Returns the birth date
        *
        */
       function getBirthDate(sbday) {
@@ -481,7 +543,7 @@ if(typeof window.owdFbInt === 'undefined') {
           contact = new mozContact();
         }
 
-      var cfdata = f;
+      var cfdata = contacts[f];
 
        getContactPhoto(cfdata.uid,function(photo) {
           // When photo is ready this code will be executed
@@ -499,14 +561,17 @@ if(typeof window.owdFbInt === 'undefined') {
           window.console.log(cfdata.uid,worksAt,studiedAt,marriedTo,birthDate);
 
           if(navigator.mozContacts) {
-
-            var fbInfo = {uid: cfdata.uid, marriedTo: marriedTo};
+            var fbInfo = {
+                            uid: cfdata.uid,
+                            marriedTo: marriedTo,
+                            studiedAt: studiedAt
+            };
 
             contact.init({ name: [cfdata.name] , category: ['facebook'],
                               note: [JSON.stringify(fbInfo)],
                                     photo: [photo],
                                      bday: birthDate,
-                                     org: [worksAt,studiedAt]
+                                     org: [worksAt]
                                      });
 
             var request = navigator.mozContacts.save(contact);
