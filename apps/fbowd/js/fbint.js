@@ -19,9 +19,7 @@ if(typeof window.owdFbInt === 'undefined') {
     'use strict';
 
     var owdFbInt = window.owdFbInt = {};
-
-      // The access token
-      var accessToken;
+    var UI = owdFbInt.ui = {};
 
       // Access Token parameter
       var ACC_T = 'access_token';
@@ -45,16 +43,18 @@ if(typeof window.owdFbInt === 'undefined') {
 
       // Query that retrieves information about the person in relationship with
       var RELATIONSHIP_QUERY = 'SELECT uid,name from user WHERE uid IN\
-(select significant_other_id FROM user\
- WHERE uid in\
+(select significant_other_id FROM user  WHERE uid in\
  (SELECT uid1 FROM friend WHERE uid2=me()) AND significant_other_id <> "")';
 
+      // Multiquery that makes things easier to manage
       var REL_MULTIQ = 'SELECT uid, name from user WHERE uid IN \
         (SELECT significant_other_id FROM #query1 \
         wHERE significant_other_id <> "")';
 
+      // Multiquery Object
       var multiqObj = {query1: FRIENDS_QUERY, query2: REL_MULTIQ};
 
+      // Multiquery String
       var multiQStr = JSON.stringify(multiqObj);
 
       var selButton = document.querySelector('#selunsel');
@@ -72,14 +72,25 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     owdFbInt.init = function() {
-      window.console.log('document.location.search: ',document.location.search);
+      var queryString = document.location.hash.substring(1);
 
-      if(document.location.search.indexOf('redirect') !== -1
+      window.console.log('document.location.search: ',queryString);
+
+      // check if we come from a redirection
+      if((queryString.indexOf('friends') !== -1 || queryString.indexOf('messages') !== -1)
                     && document.location.toString().indexOf('logout') === -1) {
 
         window.console.log('Coming from a redirection!!!');
 
-        this.start();
+        if(queryString.indexOf('friends') !== -1) {
+          window.console.log('Getting friends!!!');
+
+          getAccessToken(function(token) { owdFbInt.getFriends(token); } );
+        }
+        else if(queryString.indexOf('messages') !== -1) {
+          window.console.log('Sending message!!!');
+          UI.sendWallMsg();
+        }
       }
     }
 
@@ -117,8 +128,8 @@ if(typeof window.owdFbInt === 'undefined') {
       done(ret);
     }
 
-    owdFbInt.start = function() {
-      getAccessToken(tokenReady);
+   UI.getFriends = function() {
+      getAccessToken(tokenReady,'friends');
     }
 
     /**
@@ -126,10 +137,8 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     function tokenReady(at) {
-      accessToken = at;
-
       prepareInfiniteScroll();
-      owdFbInt.getFriends();
+      owdFbInt.getFriends(at);
     }
 
     function getLocation() {
@@ -141,7 +150,7 @@ if(typeof window.owdFbInt === 'undefined') {
      *  Gets the Facebook friends by invoking Graph API using JSONP mechanism
      *
      */
-    owdFbInt.getFriends = function() {
+    owdFbInt.getFriends = function(accessToken) {
       var friendsService = 'https://graph.facebook.com/fql?';
 
       var params = [ACC_T + '=' + accessToken,
@@ -207,11 +216,89 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
-    var UI = owdFbInt.ui = {};
-
-    owdFbInt.ui.logout = function() {
+   UI.logout = function() {
       logout();
     };
+
+    UI.sendWallMsg = function(e) {
+      getAccessToken(function(token) {
+        // var to = '1732873859';
+        var to = '100001127136581';
+        var message = 'Hi from Open Web Device!';
+        owdFbInt.sendWallMsg(to,message,token)
+     },'messages');
+    }
+
+    UI.sendMsg = function(e) {
+      getAccessToken(function(token) {
+        var to = '100001127136581';
+        var message = 'Hi from Open Web Device!';
+        owdFbInt.sendMsg(to,message,token)
+     },'messages');
+    }
+
+    /**
+     *  Sends a message to a friend
+     *
+     *  We need to get access to the private APIs to do this
+     *
+     */
+    owdFbInt.sendMsg = function(uid,msg,token) {
+      var msgService = 'https://graph.facebook.com/#/threads?method=POST';
+
+      msgService = msgService.replace(/#/,uid);
+
+      var params = [ACC_T + '=' + token,
+                    'message=' + msg,'callback=owdFbInt.wallMessageSent'];
+
+      var q = params.join('&');
+
+      var jsonp = document.createElement('script');
+      jsonp.src = msgService + '&' + q;
+
+      window.console.log('Message Service: ',jsonp.src);
+
+      document.body.appendChild(jsonp);
+    }
+
+    /**
+     *  Posts a message to a friend's wall
+     *
+     */
+    owdFbInt.sendWallMsg = function(uid,msg,token) {
+      var msgWallService = 'https://graph.facebook.com/#/feed?method=POST';
+
+      msgWallService = msgWallService.replace(/#/,uid);
+
+      var params = [ACC_T + '=' + token,
+                    'message=' + msg,'callback=owdFbInt.wallMessageSent'];
+
+      var q = params.join('&');
+
+      var jsonp = document.createElement('script');
+      jsonp.src = msgWallService + '&' + q;
+
+      window.console.log('Wall Message Service: ',jsonp.src);
+
+      document.body.appendChild(jsonp);
+    };
+
+
+    /**
+     *  When a wall message is sent this function is executed
+     *
+     */
+    owdFbInt.wallMessageSent = function(data) {
+      window.console.log(data);
+
+      if(data.error) {
+        window.console.error('There has been an error',data.error.message);
+      }
+      else {
+          alert('Message was sent!');
+      }
+    }
+
 
     /**
      *  This function is invoked when the user starts the process of importing
@@ -240,7 +327,7 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      *
      */
-    owdFbInt.ui.selectAll = function(e) {
+    UI.selectAll = function(e) {
       window.console.log('Selecting all Contacts');
 
       bulkSelection(true);
@@ -252,11 +339,10 @@ if(typeof window.owdFbInt === 'undefined') {
     }
 
     /**
-     *
      *  Invoked when the user unselects all her contacts
      *
      */
-    owdFbInt.ui.unSelectAll = function(e)  {
+    UI.unSelectAll = function(e)  {
       window.console.log('Unselecting all the contacts');
 
       bulkSelection(false);
@@ -292,7 +378,7 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      *
      */
-    function logout() {
+    function logout(accessToken) {
       window.console.log('Logout');
       clearStorage();
 
@@ -625,39 +711,51 @@ if(typeof window.owdFbInt === 'undefined') {
       cImporter.start();
     }
 
+
     /**
      *  Obtains the access token. The access token is retrieved from the local
      *  storage and if not present a OAuth 2.0 flow is started
      *
      *
      */
-    function getAccessToken(ready) {
+    function getAccessToken(ready,state) {
       var ret;
 
       if(typeof window.localStorage.access_token === 'undefined') {
 
         window.console.log('No access token stored!!!');
 
-        var hash = window.location.hash;
+        var hash = window.location.hash.substring(1);
 
         if(hash.length > 0) {
-          if(hash.indexOf(ACC_T) === 1) {
-            var end = hash.length;
-            var expires = hash.indexOf('&');
-            if(expires !== -1) {
-                end = expires;
-            }
+          var atidx = hash.indexOf(ACC_T);
+          if(atidx !== -1) {
 
-            ret = hash.substring(ACC_T.length + 2,end);
+            var elements = hash.split('&');
+
+            window.console.log(elements);
+
+            var parameters = {};
+
+            elements.forEach(function(p) {
+              var values = p.split('=');
+
+              parameters[values[0]] = values[1];
+            });
+
+            window.console.log('Hash Parameters',parameters);
+
+            var end = parameters.expires;
+            ret = parameters.access_token;
 
             window.localStorage.access_token = ret;
             window.localStorage.expires = end * 1000;
             window.localStorage.token_ts = Date.now();
 
-            window.console.log('Access Token %s. Expires: %s',ret,end);
+            window.console.log('Access Token: %s. Expires: %s',ret,end);
           }
         } else {
-          startOAuth();
+          startOAuth(state);
         }
       }
       else {
@@ -669,7 +767,7 @@ if(typeof window.owdFbInt === 'undefined') {
         }
         else {
           window.console.log('Access Token has expired');
-          startOAuth();
+          startOAuth(state);
         }
       }
 
@@ -682,16 +780,15 @@ if(typeof window.owdFbInt === 'undefined') {
      *  Starts a OAuth 2.0 flow to obtain the user information
      *
      */
-    function startOAuth() {
+    function startOAuth(state) {
       clearStorage();
 
       // This page will be in charge of handling authorization
-      document.location = 'fbint-auth.html';
+      document.location = 'fbint-auth.html#state=' + state;
     }
 
     window.console.log('OWD FB!!!!');
 
-    fb.contacts.init();
     owdFbInt.init();
   }
   )(document);

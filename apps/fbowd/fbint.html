@@ -56,9 +56,19 @@
 
     <section id="welcome" data-position="home">
       <div>
-        <button type=button onclick="owdFbInt.start()">Import Facebook Contacts</button>
+        <button type=button onclick="owdFbInt.ui.getFriends()">Import Facebook Contacts</button>
+        <button type=button onclick="owdFbInt.ui.sendWallMsg()">Send Message to Contact</button>
       </div>
     </section>
+
+<!--
+    <section id="sendMsg" style="display:none">
+      <textarea style="width:100%;height:50%">
+      </textarea>
+
+      <button type=button onclick="owdFbInt.ui.sendMsg()">Send</button>
+    </section>
+-->
 
     <script src="js/fbint.js"></script>
   </body>
