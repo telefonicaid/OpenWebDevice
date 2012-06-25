@@ -198,14 +198,13 @@ if(typeof window.owdFbInt === 'undefined') {
 
         lmyFriends.forEach(function(f) {
           // givenName is put as name but it should be f.first_name
-          var friendAsMozContact = { name: [f.name] , familyName: [f.last_name],
-                        additionalName: [f.middle_name],
-                        givenName: [f.first_name], uid:f.uid.toString()  };
+          f.familyName = []; f.familyName[0] = f.last_name;
+          f.additionalName = []; f.additionalName[0] = f.middle_name;
+          f.givenName = []; f.givenName[0] = f.first_name;
+          f.uid = f.uid.toString();
 
-          window.console.log('UID to be painted:', friendAsMozContact.uid);
-
-          myFriendsByUid[f.uid.toString()] = friendAsMozContact;
-          myFriends.push(friendAsMozContact);
+          myFriendsByUid[f.uid] = f;
+          myFriends.push(f);
         });
 
         // My friends partners
@@ -502,9 +501,9 @@ if(typeof window.owdFbInt === 'undefined') {
      */
     var ContactsImporter = function(pcontacts) {
       // The selected contacts
-      var contacts = pcontacts;
+      var mcontacts = pcontacts;
       // The uids of the selected contacts
-     var kcontacts = Object.keys(contacts);
+     var kcontacts = Object.keys(mcontacts);
 
       var chunkSize = 10;
       var pointer = 0;
@@ -657,19 +656,21 @@ if(typeof window.owdFbInt === 'undefined') {
           contact = new mozContact();
         }
 
-      var cfdata = contacts[f];
+        var cfdata = mcontacts[f];
 
-       getContactPhoto(cfdata.uid,function(photo) {
+        window.console.log('Name: ', cfdata.name,cfdata.last_name);
+
+        getContactPhoto(cfdata.uid,function(photo) {
           // When photo is ready this code will be executed
 
-          window.console.log('Photo: ',photo);
+          // window.console.log('Photo: ',photo);
 
           var worksAt = getWorksAt(cfdata);
           var studiedAt = getStudiedAt(cfdata);
           var marriedTo = getMarriedTo(cfdata);
           var birthDate = null;
           if(cfdata.birthday_date && cfdata.birthday_date.length > 0) {
-           birthDate = getBirthDate(cfdata.birthday_date);
+            birthDate = getBirthDate(cfdata.birthday_date);
           }
 
           window.console.log(cfdata.uid,worksAt,studiedAt,marriedTo,birthDate);
@@ -681,15 +682,24 @@ if(typeof window.owdFbInt === 'undefined') {
                             studiedAt: studiedAt
             };
 
-            contact.init({ name: [cfdata.name] , familyName: [cfdata.last_name],
-                        additionalName: [cfdata.middle_name],
-                        givenName: [cfdata.first_name],
-                        category: ['facebook','fb_not_linked'],
-                        note: [JSON.stringify(fbInfo)],
+            cfdata.category = ['facebook','fb_not_linked'];
+            cfdata.note = [JSON.stringify(fbInfo)];
+            cfdata.photo = [photo];
+            cfdata.bday = [birthDate];
+            cfdata.org = [worksAt];
+            
+            contact.init(cfdata);
+/*
+            contact.init({ name: [cfdata.name] ,
+                         familyName: [cfdata.last_name],
+                         additionalName: [cfdata.middle_name],
+                        givenName: [cfdata.first_name]
+                        category: ,
+                        ,
                         photo: [photo],
                         bday: birthDate,
                         org: [worksAt]
-            });
+            }); */
 
             var request = navigator.mozContacts.save(contact);
             request.onsuccess = function() {
