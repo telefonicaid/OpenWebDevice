@@ -34,12 +34,13 @@ if(typeof window.owdFbInt === 'undefined') {
       var friendsPartners;
 
       // Query that retrieves the information about friends
-      var FRIENDS_QUERY = 'SELECT uid, name, birthday_date, email, \
+      var FRIENDS_QUERY = 'SELECT uid, name, first_name, last_name, middle_name, \
+                          birthday_date, email, \
                         relationship_status, significant_other_id, work, \
                         education \
                         FROM user \
                         WHERE uid IN (SELECT uid1 FROM friend WHERE uid2=me()) \
-                        ORDER BY name';
+                        ORDER BY last_name';
 
       // Query that retrieves information about the person in relationship with
       var RELATIONSHIP_QUERY = 'SELECT uid,name from user WHERE uid IN\
@@ -49,7 +50,7 @@ if(typeof window.owdFbInt === 'undefined') {
       // Multiquery that makes things easier to manage
       var REL_MULTIQ = 'SELECT uid, name from user WHERE uid IN \
         (SELECT significant_other_id FROM #query1 \
-        wHERE significant_other_id <> "")';
+        WHERE significant_other_id <> "")';
 
       // Multiquery Object
       var multiqObj = {query1: FRIENDS_QUERY, query2: REL_MULTIQ};
@@ -58,7 +59,7 @@ if(typeof window.owdFbInt === 'undefined') {
       var multiQStr = JSON.stringify(multiqObj);
 
       var selButton = document.querySelector('#selunsel');
-      var contactList = document.querySelector('#myFbContacts');
+      var contactList = document.querySelector('#view-contacts-list');
 
       // Canvas used to obtain the idata url images
       var canvas = document.createElement('canvas');
@@ -100,12 +101,14 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     function prepareInfiniteScroll() {
+      /*
       InfiniteScroll.create ({
         element: '#content',
         callback: loadMoreFriends
       });
 
       window.console.log('Infinite scroll done!');
+      */
     }
 
     /**
@@ -188,21 +191,38 @@ if(typeof window.owdFbInt === 'undefined') {
       if(typeof response.error === 'undefined') {
         window.console.log('Friends:',response);
 
-        myFriends = response.data[0].fql_result_set;
+        var lmyFriends = response.data[0].fql_result_set;
 
         myFriendsByUid = {};
+        myFriends = [];
 
-        myFriends.forEach(function(f) {
-          myFriendsByUid[f.uid.toString()] = f;
+        lmyFriends.forEach(function(f) {
+          // givenName is put as name but it should be f.first_name
+          var friendAsMozContact = { name: [f.name] , familyName: [f.last_name],
+                        additionalName: [f.middle_name],
+                        givenName: [f.first_name], uid:f.uid.toString()  };
+
+          window.console.log('UID to be painted:', friendAsMozContact.uid);
+
+          myFriendsByUid[f.uid.toString()] = friendAsMozContact;
+          myFriends.push(friendAsMozContact);
         });
 
         // My friends partners
         friendsPartners = parseFriendsPartners(response.data[1].fql_result_set);
 
+        contacts.List.init(document.querySelector('#groups-list'));
+
+        contacts.List.load(myFriends);
+
+        contacts.List.handleClick(this.ui.selection);
+
+        /*
+
         // Only append the first 10 friends to avoid collapsing the browser
         var pagedData = myFriends.slice(0,nextBlock);
 
-        owd.templates.append('#myFbContacts',pagedData);
+        owd.templates.append('#myFbContacts',pagedData); */
 
         document.body.dataset.state = '';
       }
@@ -215,6 +235,7 @@ if(typeof window.owdFbInt === 'undefined') {
         }
       }
     }
+
 
    UI.logout = function() {
       logout();
@@ -259,7 +280,7 @@ if(typeof window.owdFbInt === 'undefined') {
       window.console.log('Message Service: ',jsonp.src);
 
       document.body.appendChild(jsonp);
-    }
+    };
 
     /**
      *  Posts a message to a friend's wall
@@ -281,6 +302,14 @@ if(typeof window.owdFbInt === 'undefined') {
       window.console.log('Wall Message Service: ',jsonp.src);
 
       document.body.appendChild(jsonp);
+    };
+
+    /**
+     *   Post a photo to the user
+     *
+     */
+    owdFbInt.postPhoto = function(photoBlob) {
+      var photoService = '';
     };
 
 
@@ -361,7 +390,7 @@ if(typeof window.owdFbInt === 'undefined') {
     function bulkSelection(value) {
       window.console.log('Bulk Selection');
 
-      var list = document.querySelector('#myFbContacts').
+      var list = document.querySelector('#view-contacts-list').
                               querySelectorAll('input[type="checkbox"]');
 
       var total = list.length;
@@ -402,19 +431,18 @@ if(typeof window.owdFbInt === 'undefined') {
      *   Invoked when an element in the friend list is selected
      *
      */
-    owdFbInt.ui.selection = function(e) {
-      var ele = e.target;
-      window.console.log('Clicked!!!',ele.tagName);
+    owdFbInt.ui.selection = function(uid) {
+      var ele = contactList.querySelector('input[name=' + '"' + uid + '"' + ']');
 
-      if(ele.tagName === 'INPUT') {
-        if(ele.checked === true) {
-          window.console.log('Contact has been selected',ele.name);
-          selectedContacts[ele.name] = myFriendsByUid[ele.name];
-        }
-        else {
-            window.console.log('Contact has been unselected',ele.name);
-            delete selectedContacts[ele.name];
-        }
+      if(ele.checked !== true) {
+        window.console.log('Contact has been selected',ele.name);
+        ele.checked = true;
+        selectedContacts[ele.name] = myFriendsByUid[ele.name];
+      }
+      else {
+          window.console.log('Contact has been unselected',ele.name);
+          ele.checked = false;
+          delete selectedContacts[ele.name];
       }
     }
 
@@ -448,7 +476,7 @@ if(typeof window.owdFbInt === 'undefined') {
       var img = contactList.querySelector('#c' + uid + ' img');
 
       // The contact was not previously loaded on the DOM
-      if(img === null) {
+      if(img === null || img.src === '') {
         img = document.createElement('img');
         img.crossOrigin = "Anonymous";
 
@@ -653,12 +681,15 @@ if(typeof window.owdFbInt === 'undefined') {
                             studiedAt: studiedAt
             };
 
-            contact.init({ name: [cfdata.name] , category: ['facebook'],
-                              note: [JSON.stringify(fbInfo)],
-                                    photo: [photo],
-                                     bday: birthDate,
-                                     org: [worksAt]
-                                     });
+            contact.init({ name: [cfdata.name] , familyName: [cfdata.last_name],
+                        additionalName: [cfdata.middle_name],
+                        givenName: [cfdata.first_name],
+                        category: ['facebook','fb_not_linked'],
+                        note: [JSON.stringify(fbInfo)],
+                        photo: [photo],
+                        bday: birthDate,
+                        org: [worksAt]
+            });
 
             var request = navigator.mozContacts.save(contact);
             request.onsuccess = function() {
@@ -745,7 +776,7 @@ if(typeof window.owdFbInt === 'undefined') {
 
             window.console.log('Hash Parameters',parameters);
 
-            var end = parameters.expires;
+            var end = parameters.expires_in;
             ret = parameters.access_token;
 
             window.localStorage.access_token = ret;

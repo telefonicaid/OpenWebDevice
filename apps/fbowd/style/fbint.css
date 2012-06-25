@@ -150,3 +150,18 @@ body[data-state='welcome'] header {
   display:none;
 }
 
+/* For Facebook colors */
+.view-header {
+  background: -moz-linear-gradient(center top , #4D77CF, #3B5998);
+}
+
+.view-contacts-list .block-list > li {
+  padding-right: 1.5rem;
+}
+
+.block-title { border-bottom: 1px solid #4D77CF; color: #4D77CF; }
+
+button.bheader {
+  color:white;
+  padding: 0 1rem;
+}
