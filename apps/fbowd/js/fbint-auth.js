@@ -31,7 +31,7 @@ if(typeof window.owdFbAuth === 'undefined') {
 
       // Oauth dialog URI
       // var oauthDialogUri = 'https://m.facebook.com/dialog/oauth?';
-      var oauthDialogUri = 'http://www.facebook.com/dialog/oauth/?';
+      var oauthDialogUri = 'http://m.facebook.com/dialog/oauth/?';
 
     /**
      *  Initialization function it tries to find an access token

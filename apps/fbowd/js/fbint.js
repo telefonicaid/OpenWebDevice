@@ -79,7 +79,7 @@ if(typeof window.owdFbInt === 'undefined') {
 
       // check if we come from a redirection
       if((queryString.indexOf('friends') !== -1 || queryString.indexOf('messages') !== -1)
-                    && document.location.toString().indexOf('logout') === -1) {
+                    || queryString.indexOf('logout') !== -1) {
 
         window.console.log('Coming from a redirection!!!');
 
@@ -91,6 +91,12 @@ if(typeof window.owdFbInt === 'undefined') {
         else if(queryString.indexOf('messages') !== -1) {
           window.console.log('Sending message!!!');
           UI.sendWallMsg();
+        }
+        else if(queryString.indexOf('logout') !== -1) {
+          window.console.log('Logged out');
+          document.querySelector('#msg').textContent = 'Logged Out!';
+          document.querySelector('#msg').style.display = 'block';
+          window.setTimeout(function() {  window.location = getLocation(); },2000);
         }
       }
     }
@@ -198,9 +204,9 @@ if(typeof window.owdFbInt === 'undefined') {
 
         lmyFriends.forEach(function(f) {
           // givenName is put as name but it should be f.first_name
-          f.familyName = []; f.familyName[0] = f.last_name;
-          f.additionalName = []; f.additionalName[0] = f.middle_name;
-          f.givenName = []; f.givenName[0] = f.first_name;
+          f.familyName = [f.last_name];
+          f.additionalName = [];
+          f.givenName = [f.first_name + ' ' + f.middle_name];
           f.uid = f.uid.toString();
 
           myFriendsByUid[f.uid] = f;
@@ -236,8 +242,8 @@ if(typeof window.owdFbInt === 'undefined') {
     }
 
 
-   UI.logout = function() {
-      logout();
+    UI.logout = function() {
+      getAccessToken(function(token) { logout(token); },'');
     };
 
     UI.sendWallMsg = function(e) {
@@ -411,8 +417,8 @@ if(typeof window.owdFbInt === 'undefined') {
       clearStorage();
 
       document.location =
-              'https://m.facebook.com/logout.php?next=' +
-                  encodeURIComponent(getLocation() + "?logout=1")
+              'https://www.facebook.com/logout.php?next=' +
+                  encodeURIComponent(getLocation() + "#state=logout")
                   + '&access_token=' + accessToken;
     }
 
@@ -472,6 +478,8 @@ if(typeof window.owdFbInt === 'undefined') {
      */
     function getContactImg(uid,cb) {
       window.console.log('Uid to retrieve img for: ',uid);
+
+      /*
       var img = contactList.querySelector('#c' + uid + ' img');
 
       // The contact was not previously loaded on the DOM
@@ -491,7 +499,40 @@ if(typeof window.owdFbInt === 'undefined') {
       }
       else {
         cb(img);
+      } */
+
+      var imgSrc = 'http://graph.facebook.com/' + uid + '/picture?type=square';
+      // var imgSrc = 'http://icons.iconarchive.com/icons/graphics-vibe/retro-social/icons-390.jpg';
+
+      var xhr = new XMLHttpRequest({mozSystem: true});
+      xhr.open('GET', imgSrc, true);
+      xhr.responseType = 'blob';
+      xhr.timeout = 6000;
+      xhr.onload = function(e) {
+        window.console.log('Success CB invoked for img uid',uid);
+        if (xhr.status === 200 || xhr.status === 0) {
+          window.console.log('200 ok for uid',uid);
+          var mblob = e.target.response;
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            cb(e.target.result);
+          }
+
+          reader.readAsDataURL(mblob);
+        }
       }
+
+      xhr.ontimeout = function(e) {
+        window.console.log('Timeout!!! while retrieving img for uid',uid);
+        cb('');
+      }
+
+      xhr.onerror = function(e) {
+        window.console.error('Error while retrieving the img',e);
+        cb('');
+      }
+
+      xhr.send();
     }
 
     /**
@@ -660,10 +701,10 @@ if(typeof window.owdFbInt === 'undefined') {
 
         window.console.log('Name: ', cfdata.name,cfdata.last_name);
 
-        getContactPhoto(cfdata.uid,function(photo) {
+        getContactImg(cfdata.uid,function(photo) {
           // When photo is ready this code will be executed
 
-          // window.console.log('Photo: ',photo);
+          window.console.log('Photo: ',photo);
 
           var worksAt = getWorksAt(cfdata);
           var studiedAt = getStudiedAt(cfdata);
@@ -687,19 +728,8 @@ if(typeof window.owdFbInt === 'undefined') {
             cfdata.photo = [photo];
             cfdata.bday = [birthDate];
             cfdata.org = [worksAt];
-            
+
             contact.init(cfdata);
-/*
-            contact.init({ name: [cfdata.name] ,
-                         familyName: [cfdata.last_name],
-                         additionalName: [cfdata.middle_name],
-                        givenName: [cfdata.first_name]
-                        category: ,
-                        ,
-                        photo: [photo],
-                        bday: birthDate,
-                        org: [worksAt]
-            }); */
 
             var request = navigator.mozContacts.save(contact);
             request.onsuccess = function() {

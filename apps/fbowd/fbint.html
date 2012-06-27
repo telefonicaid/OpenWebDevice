@@ -68,7 +68,7 @@
                     <span class="checkbox"><input name="#uid#" type="checkbox"><i></i></span>
                     <a href="#" class="item">
                       <figure class="item-media pull-right block-media">
-                         <img crossorigin="anonymous" src=''
+                         <img  src=''
                       data-src="https://graph.facebook.com/#uid#/picture?type=square">
                       </figure>
                       <p class="item-body">
@@ -92,11 +92,23 @@
 
   </section> <!-- main -->
 
-    <section id="welcome" style="background-color: white">
-      <div>
-        <button type=button onclick="owdFbInt.ui.getFriends()">Import Facebook Contacts</button>
-        <button type=button onclick="owdFbInt.ui.sendWallMsg()">Send Message to Contact</button>
+    <section id="welcome" style="background:white;width:100%">
+        <header>
+          <h1 data-l10n-id="contacts">Facebook Application</h1>
+        </header>
+          <ol class="myMenu">
+            <li><button  type=button onclick="owdFbInt.ui.getFriends()">
+                                          Import Facebook Contacts</button></li>
+            <li><button type=button onclick="owdFbInt.ui.sendWallMsg()">
+                                          Send Message to Contact</button></li>
+            <li><button type=button>Show Facebook Data</button></li>
+            <li><button type=button>Post Photo</button></li>
+            <li><button type=button
+                        onclick="owdFbInt.ui.logout()">Logout</button></li>
+          </ol>
       </div>
+
+      <p id="msg" style="color:red"></p>
     </section>
 
   <script type="text/javascript" src="js/utilities/responsive.js"></script>
