@@ -68,6 +68,8 @@ if(typeof window.owdFbInt === 'undefined') {
       var BLOCK_SIZE = 5;
       var nextBlock = BLOCK_SIZE + 3;
 
+      var totalPhotoBytes = 0;
+
     /**
      *  Initialization function it tries to find an access token
      *
@@ -101,21 +103,6 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
-    /**
-     *  Prepares the UI for infinite scrolling
-     *
-     *
-     */
-    function prepareInfiniteScroll() {
-      /*
-      InfiniteScroll.create ({
-        element: '#content',
-        callback: loadMoreFriends
-      });
-
-      window.console.log('Infinite scroll done!');
-      */
-    }
 
     /**
      *  Adds more friends to the list
@@ -146,7 +133,6 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     function tokenReady(at) {
-      prepareInfiniteScroll();
       owdFbInt.getFriends(at);
     }
 
@@ -203,9 +189,9 @@ if(typeof window.owdFbInt === 'undefined') {
         myFriends = [];
 
         lmyFriends.forEach(function(f) {
-          // givenName is put as name but it should be f.first_name
+            // givenName is put as name but it should be f.first_name
           f.familyName = [f.last_name];
-          f.additionalName = [];
+          f.additionalName = [f.middle_name];
           f.givenName = [f.first_name + ' ' + f.middle_name];
           f.uid = f.uid.toString();
 
@@ -221,13 +207,6 @@ if(typeof window.owdFbInt === 'undefined') {
         contacts.List.load(myFriends);
 
         contacts.List.handleClick(this.ui.selection);
-
-        /*
-
-        // Only append the first 10 friends to avoid collapsing the browser
-        var pagedData = myFriends.slice(0,nextBlock);
-
-        owd.templates.append('#myFbContacts',pagedData); */
 
         document.body.dataset.state = '';
       }
@@ -263,6 +242,7 @@ if(typeof window.owdFbInt === 'undefined') {
      },'messages');
     }
 
+
     /**
      *  Sends a message to a friend
      *
@@ -287,6 +267,7 @@ if(typeof window.owdFbInt === 'undefined') {
       document.body.appendChild(jsonp);
     };
 
+
     /**
      *  Posts a message to a friend's wall
      *
@@ -308,6 +289,7 @@ if(typeof window.owdFbInt === 'undefined') {
 
       document.body.appendChild(jsonp);
     };
+
 
     /**
      *   Post a photo to the user
@@ -451,26 +433,6 @@ if(typeof window.owdFbInt === 'undefined') {
       }
     }
 
-    /**
-     *   Obtains the photo of the contact as a data URL
-     *
-     */
-    function getContactPhoto(uid,cb) {
-      var contactImg = getContactImg(uid,function(contactImg) {
-        // Checking whether the image was actually loaded or not
-        if(contactImg !== null) {
-          canvas.width = contactImg.width;
-          canvas.height = contactImg.height;
-
-          canvas.getContext('2d').drawImage(contactImg,0,0);
-
-          cb(canvas.toDataURL());
-        }
-        else {
-          cb('');
-        }
-      });
-    }
 
     /**
      *  Obtains a img DOM Element with the Contact's img
@@ -479,35 +441,16 @@ if(typeof window.owdFbInt === 'undefined') {
     function getContactImg(uid,cb) {
       window.console.log('Uid to retrieve img for: ',uid);
 
-      /*
-      var img = contactList.querySelector('#c' + uid + ' img');
+      var PHOTO_TIMEOUT = 6000;
 
-      // The contact was not previously loaded on the DOM
-      if(img === null || img.src === '') {
-        img = document.createElement('img');
-        img.crossOrigin = "Anonymous";
-
-        img.src = 'https://graph.facebook.com/' + uid + '/picture?type=square';
-        // A timeout is setup just in case the photo is not loaded
-        var timeoutId = window.setTimeout(function() {
-                          img.onload = null; cb(null); img.src = ''; },5000);
-
-        img.onload = function() {
-          window.clearTimeout(timeoutId);
-          cb(img);
-        }
-      }
-      else {
-        cb(img);
-      } */
-
-      var imgSrc = 'http://graph.facebook.com/' + uid + '/picture?type=square';
-      // var imgSrc = 'http://icons.iconarchive.com/icons/graphics-vibe/retro-social/icons-390.jpg';
+      var imgSrc = 'http://graph.facebook.com/' + uid + '/picture?type=large';
 
       var xhr = new XMLHttpRequest({mozSystem: true});
       xhr.open('GET', imgSrc, true);
       xhr.responseType = 'blob';
-      xhr.timeout = 6000;
+
+      xhr.timeout = PHOTO_TIMEOUT;
+
       xhr.onload = function(e) {
         window.console.log('Success CB invoked for img uid',uid);
         if (xhr.status === 200 || xhr.status === 0) {
@@ -516,6 +459,13 @@ if(typeof window.owdFbInt === 'undefined') {
           var reader = new FileReader();
           reader.onload = function(e) {
             cb(e.target.result);
+
+            totalPhotoBytes += e.target.result.length;
+          }
+
+          reader.onerror = function(e) {
+            window.console.error('File Reader Error',e.target.error.name);
+            cb('');
           }
 
           reader.readAsDataURL(mblob);
@@ -544,7 +494,7 @@ if(typeof window.owdFbInt === 'undefined') {
       // The selected contacts
       var mcontacts = pcontacts;
       // The uids of the selected contacts
-     var kcontacts = Object.keys(mcontacts);
+      var kcontacts = Object.keys(mcontacts);
 
       var chunkSize = 10;
       var pointer = 0;
@@ -558,7 +508,8 @@ if(typeof window.owdFbInt === 'undefined') {
         var cgroup = kcontacts.slice(pointer,pointer + chunkSize);
           persistContactGroup(cgroup,function() {
             pointer += chunkSize; this.pending -= chunkSize;
-            this.onsuccess(); }.bind(this) );
+            this.onsuccess();
+          }.bind(this) );
       } // importSlice
 
       /**
@@ -569,9 +520,10 @@ if(typeof window.owdFbInt === 'undefined') {
         if(this.pending > 0) {
           if(this.pending < chunkSize) {
             var cgroup = kcontacts.slice(pointer,pointer + this.pending);
-            persistContactGroup(cgroup,function() { this.pending = 0;
-                                                        this.onsuccess(); }.bind(this) );
-          }
+            persistContactGroup(cgroup,function() {
+                  this.pending = 0;
+                  this.onsuccess(); }.bind(this) );
+            }
           else {
             (importSlice.bind(this))();
           }
@@ -745,7 +697,8 @@ if(typeof window.owdFbInt === 'undefined') {
 
             request.onerror = function(e) {
               numResponses++;
-              window.console.log('Contact Add error: ',numResponses);
+              window.console.log('Contact Add error: ',e.target.name,
+                                                              cfdata.uid);
 
               if(numResponses === totalContacts) {
                 if(typeof doneCB === 'function') {
@@ -769,12 +722,13 @@ if(typeof window.owdFbInt === 'undefined') {
 
       var cImporter = new ContactsImporter(selectedContacts);
       cImporter.onsuccess = function() {
-        window.console.log('On success invoked!!!');
+        window.console.log('All contacts. On success invoked!!!');
 
         if(cImporter.pending > 0) {
           cImporter.continue();
         }
         else {
+          window.console.log('TOTAL SIZE OF IMPORTED PHOTOS: ',totalPhotoBytes);
           importedCB();
         }
       };
@@ -861,6 +815,15 @@ if(typeof window.owdFbInt === 'undefined') {
     window.console.log('OWD FB!!!!');
 
     owdFbInt.init();
+
+    window.addEventListener('keydown', function onkeydown(event) {
+      if (event.keyCode === event.DOM_VK_ESCAPE) {
+        document.body.dataset.state = 'welcome';
+        event.stopPropagation();
+      }
+    }, true);
+
+    // addEventListener
   }
   )(document);
 }
