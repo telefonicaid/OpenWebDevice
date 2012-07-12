@@ -256,13 +256,13 @@ body > section:first-child {
 
 
 .icon-fav-dark {
-  background-image: url(gphx/bitmap/default/vw-jumper/fav.png);
+  background-image: url(images/fav.png);
   width: 1.2rem;
   height: 1.1rem;
 }
 
 .icon-search {
-  background-image: url(gphx/bitmap/default/vw-jumper/search.png);
+  background-image: url(images/search.png);
   width: 1.2rem;
   height: 1.2rem;
 }
