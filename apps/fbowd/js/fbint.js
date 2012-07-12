@@ -37,7 +37,7 @@ if(typeof window.owdFbInt === 'undefined') {
       var FRIENDS_QUERY = 'SELECT uid, name, first_name, last_name, middle_name, \
                           birthday_date, email, \
                         relationship_status, significant_other_id, work, \
-                        education \
+                        education, cell, other_phone, current_location \
                         FROM user \
                         WHERE uid IN (SELECT uid1 FROM friend WHERE uid2=me()) \
                         ORDER BY last_name';
@@ -59,7 +59,7 @@ if(typeof window.owdFbInt === 'undefined') {
       var multiQStr = JSON.stringify(multiqObj);
 
       var selButton = document.querySelector('#selunsel');
-      var contactList = document.querySelector('#view-contacts-list');
+      var contactList = document.querySelector('#groups-list');
 
       // Canvas used to obtain the idata url images
       var canvas = document.createElement('canvas');
@@ -125,6 +125,8 @@ if(typeof window.owdFbInt === 'undefined') {
     }
 
    UI.getFriends = function() {
+      clearList();
+
       getAccessToken(tokenReady,'friends');
     }
 
@@ -147,10 +149,18 @@ if(typeof window.owdFbInt === 'undefined') {
      */
     owdFbInt.getFriends = function(accessToken) {
       var friendsService = 'https://graph.facebook.com/fql?';
+      // var friendsService = 'https://api.facebook.com/method/facebook.fql.query?'
 
       var params = [ACC_T + '=' + accessToken,
                     'q' + '=' + encodeURIComponent(multiQStr),
                         'callback=owdFbInt.friendsReady'];
+/*
+      var params = [ACC_T + '=' + accessToken,
+                    'query' + '=' + encodeURIComponent(FRIENDS_QUERY),
+                    'format=JSON',
+                        'callback=owdFbInt.friendsReady'];
+*/
+
       var q = params.join('&');
 
       var jsonp = document.createElement('script');
@@ -193,10 +203,30 @@ if(typeof window.owdFbInt === 'undefined') {
           f.familyName = [f.last_name];
           f.additionalName = [f.middle_name];
           f.givenName = [f.first_name + ' ' + f.middle_name];
+
+
+          if(f.email) {
+            f.email = [{type:['facebook'],address:f.email}];
+          }
+
+          var nextidx = 0;
+          if(f.cell) {
+            f.tel = [{type:['facebook'],number:f.cell}];
+            nextidx = 1;
+          }
+
+          if(f.other_phone) {
+            f.tel[nextidx] = {type:['facebook'],number:f.other_phone};
+          }
+
           f.uid = f.uid.toString();
 
           myFriendsByUid[f.uid] = f;
           myFriends.push(f);
+
+          window.console.log('Cell: ',f.cell);
+          window.console.log('Current Location: ',f.current_location);
+          window.console.log('email: ',f.email);
         });
 
         // My friends partners
@@ -206,7 +236,7 @@ if(typeof window.owdFbInt === 'undefined') {
 
         contacts.List.load(myFriends);
 
-        contacts.List.handleClick(this.ui.selection);
+        // contacts.List.handleClick(this.ui.selection);
 
         document.body.dataset.state = '';
       }
@@ -320,17 +350,21 @@ if(typeof window.owdFbInt === 'undefined') {
      *  This function is invoked when the user starts the process of importing
      *
      */
-    owdFbInt.ui.importAll = function(e) {
+    UI.importAll = function(e) {
       window.console.log('Importing all the contacts',Object.keys(selectedContacts).length);
 
       if(Object.keys(selectedContacts).length > 0) {
         owdFbInt.importAll(function() {
           window.console.log('All contacts have been imported');
           document.body.dataset.state = '';
+          // Once all contacts have been imported, they are unselected
+          UI.unSelectAll();
+          /*
           var req = navigator.mozContacts.find({});
           req.onsuccess = function(e) {
             window.console.log('Number of contacts:' , e.target.result.length);
-          }
+          } */
+
         });
       }
       else {
@@ -354,6 +388,10 @@ if(typeof window.owdFbInt === 'undefined') {
       selButton.onclick = UI.unSelectAll;
     }
 
+    UI.back = function(e) {
+      document.body.dataset.state = 'welcome';
+    }
+
     /**
      *  Invoked when the user unselects all her contacts
      *
@@ -370,6 +408,17 @@ if(typeof window.owdFbInt === 'undefined') {
     }
 
     /**
+     *   Clears the list of contacts
+     *
+     */
+    function clearList() {
+      var template = contactList.querySelector('[data-template]');
+
+      contactList.innerHTML = '';
+      contactList.appendChild(template);
+    }
+
+    /**
      *  Makes a bulk selection of the contacts
      *
      *
@@ -377,8 +426,7 @@ if(typeof window.owdFbInt === 'undefined') {
     function bulkSelection(value) {
       window.console.log('Bulk Selection');
 
-      var list = document.querySelector('#view-contacts-list').
-                              querySelectorAll('input[type="checkbox"]');
+      var list = contactList.querySelectorAll('input[type="checkbox"]');
 
       var total = list.length;
 
@@ -418,17 +466,39 @@ if(typeof window.owdFbInt === 'undefined') {
      *   Invoked when an element in the friend list is selected
      *
      */
-    owdFbInt.ui.selection = function(uid) {
-      var ele = contactList.querySelector('input[name=' + '"' + uid + '"' + ']');
+    UI.selection = function(e) {
+      var uid,ele,checked;
 
-      if(ele.checked !== true) {
+      checked = false;
+
+      if(e.target.dataset.uuid) {
+        uid = e.target.dataset.uuid;
+      }
+      else if(e.target.tagName === 'INPUT') {
+         ele = e.target;
+         checked = true;
+      }
+
+      window.console.log(e.target.tagName);
+      window.console.log(e.currentTarget.tagName);
+
+      if(typeof ele === 'undefined') {
+        ele = contactList.querySelector('input[name=' + '"' + uid + '"' + ']');
+      }
+
+      if((ele.checked !== true && checked !== true) ||
+                                    (checked && ele.checked === true)) {
         window.console.log('Contact has been selected',ele.name);
-        ele.checked = true;
+        if(!checked) {
+          ele.checked = true;
+        }
         selectedContacts[ele.name] = myFriendsByUid[ele.name];
       }
       else {
           window.console.log('Contact has been unselected',ele.name);
-          ele.checked = false;
+          if(!checked) {
+            ele.checked = false;
+          }
           delete selectedContacts[ele.name];
       }
     }
@@ -676,7 +746,8 @@ if(typeof window.owdFbInt === 'undefined') {
             };
 
             cfdata.category = ['facebook','fb_not_linked'];
-            cfdata.note = [JSON.stringify(fbInfo)];
+            cfdata.category[2] = JSON.stringify(fbInfo);
+
             cfdata.photo = [photo];
             cfdata.bday = [birthDate];
             cfdata.org = [worksAt];
@@ -725,7 +796,7 @@ if(typeof window.owdFbInt === 'undefined') {
         window.console.log('All contacts. On success invoked!!!');
 
         if(cImporter.pending > 0) {
-          cImporter.continue();
+          window.setTimeout(function() { cImporter.continue(); },0);
         }
         else {
           window.console.log('TOTAL SIZE OF IMPORTED PHOTOS: ',totalPhotoBytes);
@@ -746,7 +817,7 @@ if(typeof window.owdFbInt === 'undefined') {
     function getAccessToken(ready,state) {
       var ret;
 
-      if(typeof window.localStorage.access_token === 'undefined') {
+      if(!window.localStorage.access_token) {
 
         window.console.log('No access token stored!!!');
 
@@ -813,17 +884,7 @@ if(typeof window.owdFbInt === 'undefined') {
     }
 
     window.console.log('OWD FB!!!!');
-
     owdFbInt.init();
-
-    window.addEventListener('keydown', function onkeydown(event) {
-      if (event.keyCode === event.DOM_VK_ESCAPE) {
-        document.body.dataset.state = 'welcome';
-        event.stopPropagation();
-      }
-    }, true);
-
-    // addEventListener
   }
   )(document);
 }
