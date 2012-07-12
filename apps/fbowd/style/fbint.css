@@ -2,11 +2,10 @@
     display: none !important;
 }
 
-/*
- html,body {
-        overflow: auto !important;
-      }
-*/
+html {
+  font-size: 62.5%;
+  overflow:hidden;
+}
 
       ol {
             list-style: none;
@@ -151,13 +150,15 @@ body[data-state='welcome'] header {
 }
 
 /* For Facebook colors */
-.view-header {
-  background: -moz-linear-gradient(center top , #4D77CF, #3B5998);
+header {
+  background: -moz-linear-gradient(center top , #4D77CF, #3B5998) !important;
 }
 
+/*
 .view-contacts-list .block-list > li {
   padding-right: 1.5rem;
 }
+*/
 
 .block-title { border-bottom: 1px solid #4D77CF; color: #4D77CF; }
 
@@ -186,4 +187,126 @@ button.bheader {
 .myMenu li {
  display:block;
  width:100%;
+}
+
+#mainContent {
+  width: -moz-calc(100% + 0.8rem);
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  -moz-box-sizing: border-box;
+  padding: 1.4rem 2rem;
+  background: #f4f4f4;
+  color: #333;
+  text-align: left;
+
+  height:100%;
+}
+
+#shortcuts {
+  position: fixed;
+  right: 0;
+  top: 5rem;
+  bottom: 1rem;
+  height:-moz-calc(100% - 6.6rem);
+  width: 4.5rem;
+
+  background:transparent !important;
+
+   z-index:100;
+}
+
+#shortcuts ol li[data-letter] {
+  height:3.703737%;
+}
+
+#groups-list {
+  width: -moz-calc(100% - 2.5rem);
+}
+
+body > section:first-child {
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+
+#shortcuts ol {
+  height: 100%;
+  padding: 0.3rem 0;
+  padding-left:1rem;
+  opacity: 0.6;
+  width:100%;
+}
+
+#shortcuts li {
+  font-size: 1.1rem;
+  line-height: 1em;
+  text-align: center;
+  text-transform: uppercase;
+
+   width:100%;
+}
+
+#shortcuts  a, #shortcuts  abbr {
+  display: block;
+  color: #333;
+  width: 100%;
+}
+
+
+.icon-fav-dark {
+  background-image: url(gphx/bitmap/default/vw-jumper/fav.png);
+  width: 1.2rem;
+  height: 1.1rem;
+}
+
+.icon-search {
+  background-image: url(gphx/bitmap/default/vw-jumper/search.png);
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+a {
+  text-decoration: none;
+  outline: none;
+  color: #ff4e00;
+}
+
+abbr, acronym {
+  cursor: default;
+  border: none;
+}
+
+#main {
+  height:-moz-calc(100% - 5rem);
+}
+
+#shortcuts #current {
+  position: fixed;
+  right: 4rem;
+  top: 30%;
+  width: 10.5rem;
+  height: 10.5rem;
+/*  background: -moz-element(#current-jumper); */
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.7);
+  font: 6rem/10.5rem System Sans Light, Sans-serif;
+  color: #fff;
+  text-align: center;
+  -moz-transition: opacity;
+  opacity: 0;
+
+  display: block;
+  text-indent: 1.5rem;
+
+  z-index:20;
+}
+
+#shortcuts li * {
+  pointer-events: none;
+}
+
+#mainContent li[data-uuid] *:not(input) {
+  pointer-events:none;
 }
