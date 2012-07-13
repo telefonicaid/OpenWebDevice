@@ -48,7 +48,7 @@ if (typeof window.owdFbInt === 'undefined') {
     var RELATIONSHIP_QUERY = [
       'SELECT uid,name from user WHERE uid IN' ,
       '(select significant_other_id FROM user  WHERE uid in' ,
-      '(SELECT uid1 FROM friend WHERE uid2=me())' ,
+      '(SELECT uid1 FROM friend WHERE uid2=me()) ' ,
       'AND significant_other_id <> "")'
     ].join('');
 
