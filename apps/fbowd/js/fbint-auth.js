@@ -14,7 +14,7 @@
  *
  *
  */
-if(typeof window.owdFbAuth === 'undefined') {
+if (typeof window.owdFbAuth === 'undefined') {
   (function(document) {
     'use strict';
 
@@ -38,8 +38,9 @@ if(typeof window.owdFbAuth === 'undefined') {
      *
      */
     owdFbAuth.init = function() {
-      window.console.log("The hash is: ", hash);
-      window.console.log('document.location.search: ',document.location.search);
+      window.console.log('The hash is: ', hash);
+      window.console.log('document.location.search: ',
+                                    document.location.search);
 
       this.start();
     }
@@ -50,7 +51,7 @@ if(typeof window.owdFbAuth === 'undefined') {
     }
 
     function getLocation() {
-      return (window.location.protocol + "//" + window.location.host +
+      return (window.location.protocol + '//' + window.location.host +
                 window.location.port + '/fbint.html');
     }
 
@@ -66,8 +67,8 @@ if(typeof window.owdFbAuth === 'undefined') {
 
       document.location =
               'https://m.facebook.com/logout.php?next=' +
-                  encodeURIComponent(getLocation() + "?logout=1")
-                  + '&access_token=' + accessToken;
+                  encodeURIComponent(getLocation() + '?logout=1') +
+                  '&access_token=' + accessToken;
     }
 
     /**
@@ -100,14 +101,18 @@ if(typeof window.owdFbAuth === 'undefined') {
       clearStorage();
 
       var queryParams = ['client_id=' + appID,
-                                'redirect_uri='
-                                    + encodeURIComponent(getLocation()),
+                                'redirect_uri=' +
+                                encodeURIComponent(getLocation()),
                                 'response_type=token',
                                 window.location.hash.substring(1),
                                 'scope=' +
-      encodeURIComponent('friends_about_me,friends_birthday,email,\
-friends_education_history, friends_work_history,friends_status,\
-friends_relationships,publish_stream')];
+        encodeURIComponent([
+                          'friends_about_me,friends_birthday,email,' ,
+                          'friends_education_history, friends_work_history,' ,
+                          'friends_status,friends_relationships,publish_stream'
+                          ].join('')
+      )]; // Query params
+
       var query = queryParams.join('&');
       var url = oauthDialogUri + query;
 

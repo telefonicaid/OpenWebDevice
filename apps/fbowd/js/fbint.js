@@ -14,43 +14,50 @@
  *
  *
  */
-if(typeof window.owdFbInt === 'undefined') {
+if (typeof window.owdFbInt === 'undefined') {
   (function(document) {
     'use strict';
 
     var owdFbInt = window.owdFbInt = {};
     var UI = owdFbInt.ui = {};
 
-      // Access Token parameter
-      var ACC_T = 'access_token';
+    // Access Token parameter
+    var ACC_T = 'access_token';
 
-      // Contacts selected to be sync to the address book
-      var selectedContacts = {};
+    // Contacts selected to be sync to the address book
+    var selectedContacts = {};
 
-      // The whole list of friends as an array
-      var myFriends,myFriendsByUid;
+    // The whole list of friends as an array
+    var myFriends, myFriendsByUid;
 
-      // Partners
-      var friendsPartners;
+    // Partners
+    var friendsPartners;
 
-      // Query that retrieves the information about friends
-      var FRIENDS_QUERY = 'SELECT uid, name, first_name, last_name, middle_name, \
-                          birthday_date, email, \
-                        relationship_status, significant_other_id, work, \
-                        education, cell, other_phone, current_location \
-                        FROM user \
-                        WHERE uid IN (SELECT uid1 FROM friend WHERE uid2=me()) \
-                        ORDER BY last_name';
+    // Query that retrieves the information about friends
+    var FRIENDS_QUERY = [
+      'SELECT uid, name, first_name, last_name,' ,
+      'middle_name, birthday_date, email,' ,
+      'relationship_status, significant_other_id, work,' ,
+      'education, cell, other_phone, current_location' ,
+      ' FROM user' ,
+      ' WHERE uid IN (SELECT uid1 FROM friend WHERE uid2=me())' ,
+      ' ORDER BY last_name'
+    ].join('');
 
-      // Query that retrieves information about the person in relationship with
-      var RELATIONSHIP_QUERY = 'SELECT uid,name from user WHERE uid IN\
-(select significant_other_id FROM user  WHERE uid in\
- (SELECT uid1 FROM friend WHERE uid2=me()) AND significant_other_id <> "")';
+    // Query that retrieves information about the person in relationship with
+    var RELATIONSHIP_QUERY = [
+      'SELECT uid,name from user WHERE uid IN' ,
+      '(select significant_other_id FROM user  WHERE uid in' ,
+      '(SELECT uid1 FROM friend WHERE uid2=me())' ,
+      'AND significant_other_id <> "")'
+    ].join('');
 
       // Multiquery that makes things easier to manage
-      var REL_MULTIQ = 'SELECT uid, name from user WHERE uid IN \
-        (SELECT significant_other_id FROM #query1 \
-        WHERE significant_other_id <> "")';
+    var REL_MULTIQ = [
+      'SELECT uid, name from user WHERE uid IN' ,
+      '(SELECT significant_other_id FROM #query1' ,
+      ' WHERE significant_other_id <> "")'
+    ].join('');
 
       // Multiquery Object
       var multiqObj = {query1: FRIENDS_QUERY, query2: REL_MULTIQ};
@@ -77,28 +84,30 @@ if(typeof window.owdFbInt === 'undefined') {
     owdFbInt.init = function() {
       var queryString = document.location.hash.substring(1);
 
-      window.console.log('document.location.search: ',queryString);
+      window.console.log('document.location.search: ', queryString);
 
       // check if we come from a redirection
-      if((queryString.indexOf('friends') !== -1 || queryString.indexOf('messages') !== -1)
-                    || queryString.indexOf('logout') !== -1) {
+      if ((queryString.indexOf('friends') !== -1 ||
+           queryString.indexOf('messages') !== -1) ||
+          queryString.indexOf('logout') !== -1) {
 
         window.console.log('Coming from a redirection!!!');
 
-        if(queryString.indexOf('friends') !== -1) {
+        if (queryString.indexOf('friends') !== -1) {
           window.console.log('Getting friends!!!');
 
-          getAccessToken(function(token) { owdFbInt.getFriends(token); } );
+          getAccessToken(function(token) { owdFbInt.getFriends(token); });
         }
-        else if(queryString.indexOf('messages') !== -1) {
+        else if (queryString.indexOf('messages') !== -1) {
           window.console.log('Sending message!!!');
           UI.sendWallMsg();
         }
-        else if(queryString.indexOf('logout') !== -1) {
+        else if (queryString.indexOf('logout') !== -1) {
           window.console.log('Logged out');
           document.querySelector('#msg').textContent = 'Logged Out!';
           document.querySelector('#msg').style.display = 'block';
-          window.setTimeout(function() {  window.location = getLocation(); },2000);
+          window.setTimeout(
+                        function() { window.location = getLocation(); },2000);
         }
       }
     }
@@ -112,22 +121,22 @@ if(typeof window.owdFbInt === 'undefined') {
       window.console.log('Infinite scroll callback invoked');
       var ret = false;
       var nextElements;
-      if(nextBlock + BLOCK_SIZE < myFriends.length) {
-        nextElements = myFriends.slice(nextBlock,nextBlock + BLOCK_SIZE);
+      if (nextBlock + BLOCK_SIZE < myFriends.length) {
+        nextElements = myFriends.slice(nextBlock, nextBlock + BLOCK_SIZE);
         nextBlock += BLOCK_SIZE;
       }
       else {
         nextElements = myFriends.slice(nextBlock);
         ret = true;
       }
-      owd.templates.append(contactList,nextElements);
+      owd.templates.append(contactList, nextElements);
       done(ret);
     }
 
    UI.getFriends = function() {
       clearList();
 
-      getAccessToken(tokenReady,'friends');
+      getAccessToken(tokenReady, 'friends');
     }
 
     /**
@@ -139,8 +148,8 @@ if(typeof window.owdFbInt === 'undefined') {
     }
 
     function getLocation() {
-      return (window.location.protocol + "//" + window.location.host + window.location.port +
-      window.location.pathname);
+      return (window.location.protocol + '//' + window.location.host +
+              window.location.port + window.location.pathname);
     }
 
     /**
@@ -149,7 +158,7 @@ if(typeof window.owdFbInt === 'undefined') {
      */
     owdFbInt.getFriends = function(accessToken) {
       var friendsService = 'https://graph.facebook.com/fql?';
-      // var friendsService = 'https://api.facebook.com/method/facebook.fql.query?'
+  // var friendsService = 'https://api.facebook.com/method/facebook.fql.query?'
 
       var params = [ACC_T + '=' + accessToken,
                     'q' + '=' + encodeURIComponent(multiQStr),
@@ -186,12 +195,11 @@ if(typeof window.owdFbInt === 'undefined') {
     /**
      *  Callback invoked when friends are ready to be used
      *
-     *  TODO: Check when there is an error and the access token has to be renewed
      *
      */
     owdFbInt.friendsReady = function(response) {
-      if(typeof response.error === 'undefined') {
-        window.console.log('Friends:',response);
+      if (typeof response.error === 'undefined') {
+        window.console.log('Friends:', response);
 
         var lmyFriends = response.data[0].fql_result_set;
 
@@ -205,18 +213,18 @@ if(typeof window.owdFbInt === 'undefined') {
           f.givenName = [f.first_name + ' ' + f.middle_name];
 
 
-          if(f.email) {
-            f.email = [{type:['facebook'],address:f.email}];
+          if (f.email) {
+            f.email = [{type: ['facebook'], address: f.email}];
           }
 
           var nextidx = 0;
-          if(f.cell) {
-            f.tel = [{type:['facebook'],number:f.cell}];
+          if (f.cell) {
+            f.tel = [{type: ['facebook'], number: f.cell}];
             nextidx = 1;
           }
 
-          if(f.other_phone) {
-            f.tel[nextidx] = {type:['facebook'],number:f.other_phone};
+          if (f.other_phone) {
+            f.tel[nextidx] = {type: ['facebook'], number: f.other_phone};
           }
 
           f.uid = f.uid.toString();
@@ -224,9 +232,9 @@ if(typeof window.owdFbInt === 'undefined') {
           myFriendsByUid[f.uid] = f;
           myFriends.push(f);
 
-          window.console.log('Cell: ',f.cell);
-          window.console.log('Current Location: ',f.current_location);
-          window.console.log('email: ',f.email);
+          window.console.log('Cell: ', f.cell);
+          window.console.log('Current Location: ', f.current_location);
+          window.console.log('email: ', f.email);
         });
 
         // My friends partners
@@ -241,9 +249,9 @@ if(typeof window.owdFbInt === 'undefined') {
         document.body.dataset.state = '';
       }
       else {
-        window.console.log('There has been an error, while retrieving friends'
-                                                    ,response.error.message);
-        if(response.error.code === 190) {
+        window.console.log('There has been an error, while retrieving friends',
+                                                    response.error.message);
+        if (response.error.code === 190) {
           window.console.log('Restarting the OAuth flow');
           startOAuth();
         }
@@ -260,7 +268,7 @@ if(typeof window.owdFbInt === 'undefined') {
         // var to = '1732873859';
         var to = '100001127136581';
         var message = 'Hi from Open Web Device!';
-        owdFbInt.sendWallMsg(to,message,token)
+        owdFbInt.sendWallMsg(to, message, token);
      },'messages');
     }
 
@@ -268,7 +276,7 @@ if(typeof window.owdFbInt === 'undefined') {
       getAccessToken(function(token) {
         var to = '100001127136581';
         var message = 'Hi from Open Web Device!';
-        owdFbInt.sendMsg(to,message,token)
+        owdFbInt.sendMsg(to, message, token);
      },'messages');
     }
 
@@ -279,20 +287,20 @@ if(typeof window.owdFbInt === 'undefined') {
      *  We need to get access to the private APIs to do this
      *
      */
-    owdFbInt.sendMsg = function(uid,msg,token) {
+    owdFbInt.sendMsg = function(uid, msg, token) {
       var msgService = 'https://graph.facebook.com/#/threads?method=POST';
 
-      msgService = msgService.replace(/#/,uid);
+      msgService = msgService.replace(/#/, uid);
 
       var params = [ACC_T + '=' + token,
-                    'message=' + msg,'callback=owdFbInt.wallMessageSent'];
+                    'message=' + msg, 'callback=owdFbInt.wallMessageSent'];
 
       var q = params.join('&');
 
       var jsonp = document.createElement('script');
       jsonp.src = msgService + '&' + q;
 
-      window.console.log('Message Service: ',jsonp.src);
+      window.console.log('Message Service: ', jsonp.src);
 
       document.body.appendChild(jsonp);
     };
@@ -302,20 +310,20 @@ if(typeof window.owdFbInt === 'undefined') {
      *  Posts a message to a friend's wall
      *
      */
-    owdFbInt.sendWallMsg = function(uid,msg,token) {
+    owdFbInt.sendWallMsg = function(uid, msg, token) {
       var msgWallService = 'https://graph.facebook.com/#/feed?method=POST';
 
-      msgWallService = msgWallService.replace(/#/,uid);
+      msgWallService = msgWallService.replace(/#/, uid);
 
       var params = [ACC_T + '=' + token,
-                    'message=' + msg,'callback=owdFbInt.wallMessageSent'];
+                    'message=' + msg, 'callback=owdFbInt.wallMessageSent'];
 
       var q = params.join('&');
 
       var jsonp = document.createElement('script');
       jsonp.src = msgWallService + '&' + q;
 
-      window.console.log('Wall Message Service: ',jsonp.src);
+      window.console.log('Wall Message Service: ', jsonp.src);
 
       document.body.appendChild(jsonp);
     };
@@ -337,8 +345,8 @@ if(typeof window.owdFbInt === 'undefined') {
     owdFbInt.wallMessageSent = function(data) {
       window.console.log(data);
 
-      if(data.error) {
-        window.console.error('There has been an error',data.error.message);
+      if (data.error) {
+        window.console.error('There has been an error', data.error.message);
       }
       else {
           alert('Message was sent!');
@@ -351,9 +359,10 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     UI.importAll = function(e) {
-      window.console.log('Importing all the contacts',Object.keys(selectedContacts).length);
+      window.console.log('Importing all the contacts',
+                                      Object.keys(selectedContacts).length);
 
-      if(Object.keys(selectedContacts).length > 0) {
+      if (Object.keys(selectedContacts).length > 0) {
         owdFbInt.importAll(function() {
           window.console.log('All contacts have been imported');
           document.body.dataset.state = '';
@@ -430,9 +439,9 @@ if(typeof window.owdFbInt === 'undefined') {
 
       var total = list.length;
 
-      window.console.log('Total input: ',total);
+      window.console.log('Total input: ', total);
 
-      for(var c = 0; c < total; c++) {
+      for (var c = 0; c < total; c++) {
         list[c].checked = value;
       }
     }
@@ -448,8 +457,8 @@ if(typeof window.owdFbInt === 'undefined') {
 
       document.location =
               'https://www.facebook.com/logout.php?next=' +
-                  encodeURIComponent(getLocation() + "#state=logout")
-                  + '&access_token=' + accessToken;
+                  encodeURIComponent(getLocation() + '#state=logout') +
+                  '&access_token=' + accessToken;
     }
 
     /**
@@ -467,14 +476,14 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      */
     UI.selection = function(e) {
-      var uid,ele,checked;
+      var uid, ele, checked;
 
       checked = false;
 
-      if(e.target.dataset.uuid) {
+      if (e.target.dataset.uuid) {
         uid = e.target.dataset.uuid;
       }
-      else if(e.target.tagName === 'INPUT') {
+      else if (e.target.tagName === 'INPUT') {
          ele = e.target;
          checked = true;
       }
@@ -482,21 +491,21 @@ if(typeof window.owdFbInt === 'undefined') {
       window.console.log(e.target.tagName);
       window.console.log(e.currentTarget.tagName);
 
-      if(typeof ele === 'undefined') {
+      if (typeof ele === 'undefined') {
         ele = contactList.querySelector('input[name=' + '"' + uid + '"' + ']');
       }
 
-      if((ele.checked !== true && checked !== true) ||
+      if ((ele.checked !== true && checked !== true) ||
                                     (checked && ele.checked === true)) {
-        window.console.log('Contact has been selected',ele.name);
-        if(!checked) {
+        window.console.log('Contact has been selected', ele.name);
+        if (!checked) {
           ele.checked = true;
         }
         selectedContacts[ele.name] = myFriendsByUid[ele.name];
       }
       else {
-          window.console.log('Contact has been unselected',ele.name);
-          if(!checked) {
+          window.console.log('Contact has been unselected', ele.name);
+          if (!checked) {
             ele.checked = false;
           }
           delete selectedContacts[ele.name];
@@ -508,8 +517,8 @@ if(typeof window.owdFbInt === 'undefined') {
      *  Obtains a img DOM Element with the Contact's img
      *
      */
-    function getContactImg(uid,cb) {
-      window.console.log('Uid to retrieve img for: ',uid);
+    function getContactImg(uid, cb) {
+      window.console.log('Uid to retrieve img for: ', uid);
 
       var PHOTO_TIMEOUT = 6000;
 
@@ -522,9 +531,9 @@ if(typeof window.owdFbInt === 'undefined') {
       xhr.timeout = PHOTO_TIMEOUT;
 
       xhr.onload = function(e) {
-        window.console.log('Success CB invoked for img uid',uid);
+        window.console.log('Success CB invoked for img uid', uid);
         if (xhr.status === 200 || xhr.status === 0) {
-          window.console.log('200 ok for uid',uid);
+          window.console.log('200 ok for uid', uid);
           var mblob = e.target.response;
           var reader = new FileReader();
           reader.onload = function(e) {
@@ -534,7 +543,7 @@ if(typeof window.owdFbInt === 'undefined') {
           }
 
           reader.onerror = function(e) {
-            window.console.error('File Reader Error',e.target.error.name);
+            window.console.error('File Reader Error', e.target.error.name);
             cb('');
           }
 
@@ -543,12 +552,12 @@ if(typeof window.owdFbInt === 'undefined') {
       }
 
       xhr.ontimeout = function(e) {
-        window.console.log('Timeout!!! while retrieving img for uid',uid);
+        window.console.log('Timeout!!! while retrieving img for uid', uid);
         cb('');
       }
 
       xhr.onerror = function(e) {
-        window.console.error('Error while retrieving the img',e);
+        window.console.error('Error while retrieving the img', e);
         cb('');
       }
 
@@ -575,11 +584,11 @@ if(typeof window.owdFbInt === 'undefined') {
        *
        */
       function importSlice() {
-        var cgroup = kcontacts.slice(pointer,pointer + chunkSize);
-          persistContactGroup(cgroup,function() {
+        var cgroup = kcontacts.slice(pointer, pointer + chunkSize);
+          persistContactGroup(cgroup, function() {
             pointer += chunkSize; this.pending -= chunkSize;
             this.onsuccess();
-          }.bind(this) );
+          }.bind(this));
       } // importSlice
 
       /**
@@ -587,12 +596,12 @@ if(typeof window.owdFbInt === 'undefined') {
        *
        */
       this.continue = function() {
-        if(this.pending > 0) {
-          if(this.pending < chunkSize) {
-            var cgroup = kcontacts.slice(pointer,pointer + this.pending);
-            persistContactGroup(cgroup,function() {
+        if (this.pending > 0) {
+          if (this.pending < chunkSize) {
+            var cgroup = kcontacts.slice(pointer, pointer + this.pending);
+            persistContactGroup(cgroup, function() {
                   this.pending = 0;
-                  this.onsuccess(); }.bind(this) );
+                  this.onsuccess(); }.bind(this));
             }
           else {
             (importSlice.bind(this))();
@@ -616,7 +625,7 @@ if(typeof window.owdFbInt === 'undefined') {
        */
       function getWorksAt(fbdata) {
         var ret = '';
-        if(fbdata.work && fbdata.work.length > 0) {
+        if (fbdata.work && fbdata.work.length > 0) {
           // It is assumed that first is the latest
           ret = fbdata.work[0].employer.name;
         }
@@ -632,16 +641,16 @@ if(typeof window.owdFbInt === 'undefined') {
       function getStudiedAt(fbdata) {
         var ret = '';
 
-        if(fbdata.education && fbdata.education.length > 0) {
+        if (fbdata.education && fbdata.education.length > 0) {
           var university = fbdata.education.filter(function(d) {
             var e = false;
-            if(d.school.type === 'College') {
+            if (d.school.type === 'College') {
               e = true;
             }
             return e;
           });
 
-          if(university.length > 0) {
+          if (university.length > 0) {
             ret = university[0].school.name;
           }
           else {
@@ -659,9 +668,10 @@ if(typeof window.owdFbInt === 'undefined') {
       function getMarriedTo(fbdata) {
         var ret = '';
 
-        window.console.log('Significant other id: ',fbdata.significant_other_id);
+        window.console.log('Significant other id: ',
+                           fbdata.significant_other_id);
 
-        if(fbdata.significant_other_id) {
+        if (fbdata.significant_other_id) {
           ret = friendsPartners[fbdata.significant_other_id];
         }
 
@@ -678,25 +688,25 @@ if(typeof window.owdFbInt === 'undefined') {
         var ret = new Date();
 
         var imonth = sbday.indexOf('/');
-        var smonth = sbday.substring(0,imonth);
+        var smonth = sbday.substring(0, imonth);
 
-        window.console.log('Birthday month:',smonth);
+        window.console.log('Birthday month:', smonth);
 
         var iyear = sbday.lastIndexOf('/');
-        if(iyear === imonth) {
+        if (iyear === imonth) {
           iyear = sbday.length;
         }
-        var sday = sbday.substring(imonth + 1,iyear);
+        var sday = sbday.substring(imonth + 1, iyear);
 
-        window.console.log('Birthday day:',sday);
+        window.console.log('Birthday day:', sday);
 
-        var syear = sbday.substring(iyear + 1,sbday.length);
-        window.console.log('Birthday year:',syear);
+        var syear = sbday.substring(iyear + 1, sbday.length);
+        window.console.log('Birthday year:', syear);
 
         ret.setDate(parseInt(sday));
-        ret.setMonth(parseInt(smonth),parseInt(sday));
+        ret.setMonth(parseInt(smonth), parseInt(sday));
 
-        if(syear && syear.length > 0) {
+        if (syear && syear.length > 0) {
           ret.setYear(parseInt(syear));
         }
 
@@ -707,45 +717,46 @@ if(typeof window.owdFbInt === 'undefined') {
      *  Persists a group of contacts
      *
      */
-    function persistContactGroup(cgroup,doneCB) {
+    function persistContactGroup(cgroup, doneCB) {
       var numResponses = 0;
       var totalContacts = cgroup.length;
 
-      window.console.log('Contacts to add: ',totalContacts);
+      window.console.log('Contacts to add: ', totalContacts);
 
       cgroup.forEach(function(f) {
         var contact;
-        if(navigator.mozContacts) {
+        if (navigator.mozContacts) {
           contact = new mozContact();
         }
 
         var cfdata = mcontacts[f];
 
-        window.console.log('Name: ', cfdata.name,cfdata.last_name);
+        window.console.log('Name: ', cfdata.name, cfdata.last_name);
 
-        getContactImg(cfdata.uid,function(photo) {
+        getContactImg(cfdata.uid, function(photo) {
           // When photo is ready this code will be executed
 
-          window.console.log('Photo: ',photo);
+          window.console.log('Photo: ', photo);
 
           var worksAt = getWorksAt(cfdata);
           var studiedAt = getStudiedAt(cfdata);
           var marriedTo = getMarriedTo(cfdata);
           var birthDate = null;
-          if(cfdata.birthday_date && cfdata.birthday_date.length > 0) {
+          if (cfdata.birthday_date && cfdata.birthday_date.length > 0) {
             birthDate = getBirthDate(cfdata.birthday_date);
           }
 
-          window.console.log(cfdata.uid,worksAt,studiedAt,marriedTo,birthDate);
+          window.console.log(cfdata.uid, worksAt, studiedAt,
+                                  marriedTo, birthDate);
 
-          if(navigator.mozContacts) {
+          if (navigator.mozContacts) {
             var fbInfo = {
                             uid: cfdata.uid,
                             marriedTo: marriedTo,
                             studiedAt: studiedAt
             };
 
-            cfdata.category = ['facebook','fb_not_linked'];
+            cfdata.category = ['facebook', 'fb_not_linked'];
             cfdata.category[2] = JSON.stringify(fbInfo);
 
             cfdata.photo = [photo];
@@ -757,10 +768,10 @@ if(typeof window.owdFbInt === 'undefined') {
             var request = navigator.mozContacts.save(contact);
             request.onsuccess = function() {
               numResponses++;
-              window.console.log('Contact added!!!',numResponses);
+              window.console.log('Contact added!!!', numResponses);
 
-              if(numResponses === totalContacts) {
-                if(typeof doneCB === 'function') {
+              if (numResponses === totalContacts) {
+                if (typeof doneCB === 'function') {
                   doneCB();
                 }
               }
@@ -768,11 +779,11 @@ if(typeof window.owdFbInt === 'undefined') {
 
             request.onerror = function(e) {
               numResponses++;
-              window.console.log('Contact Add error: ',e.target.name,
+              window.console.log('Contact Add error: ', e.target.name,
                                                               cfdata.uid);
 
-              if(numResponses === totalContacts) {
-                if(typeof doneCB === 'function') {
+              if (numResponses === totalContacts) {
+                if (typeof doneCB === 'function') {
                   doneCB();
                 }
               }
@@ -795,11 +806,12 @@ if(typeof window.owdFbInt === 'undefined') {
       cImporter.onsuccess = function() {
         window.console.log('All contacts. On success invoked!!!');
 
-        if(cImporter.pending > 0) {
+        if (cImporter.pending > 0) {
           window.setTimeout(function() { cImporter.continue(); },0);
         }
         else {
-          window.console.log('TOTAL SIZE OF IMPORTED PHOTOS: ',totalPhotoBytes);
+          window.console.log('TOTAL SIZE OF IMPORTED PHOTOS: ',
+                                  totalPhotoBytes);
           importedCB();
         }
       };
@@ -814,18 +826,18 @@ if(typeof window.owdFbInt === 'undefined') {
      *
      *
      */
-    function getAccessToken(ready,state) {
+    function getAccessToken(ready, state) {
       var ret;
 
-      if(!window.localStorage.access_token) {
+      if (!window.localStorage.access_token) {
 
         window.console.log('No access token stored!!!');
 
         var hash = window.location.hash.substring(1);
 
-        if(hash.length > 0) {
+        if (hash.length > 0) {
           var atidx = hash.indexOf(ACC_T);
-          if(atidx !== -1) {
+          if (atidx !== -1) {
 
             var elements = hash.split('&');
 
@@ -839,7 +851,7 @@ if(typeof window.owdFbInt === 'undefined') {
               parameters[values[0]] = values[1];
             });
 
-            window.console.log('Hash Parameters',parameters);
+            window.console.log('Hash Parameters', parameters);
 
             var end = parameters.expires_in;
             ret = parameters.access_token;
@@ -848,7 +860,7 @@ if(typeof window.owdFbInt === 'undefined') {
             window.localStorage.expires = end * 1000;
             window.localStorage.token_ts = Date.now();
 
-            window.console.log('Access Token: %s. Expires: %s',ret,end);
+            window.console.log('Access Token: %s. Expires: %s', ret, end);
           }
         } else {
           startOAuth(state);
@@ -857,9 +869,9 @@ if(typeof window.owdFbInt === 'undefined') {
       else {
         var timeEllapsed = Date.now() - window.localStorage.token_ts;
 
-        if(timeEllapsed < window.localStorage.expires) {
+        if (timeEllapsed < window.localStorage.expires) {
            ret = window.localStorage.access_token;
-           window.console.log('Reusing existing access token:',ret);
+           window.console.log('Reusing existing access token:', ret);
         }
         else {
           window.console.log('Access Token has expired');
@@ -867,7 +879,7 @@ if(typeof window.owdFbInt === 'undefined') {
         }
       }
 
-      if(typeof ready === 'function' && typeof ret !== 'undefined') {
+      if (typeof ready === 'function' && typeof ret !== 'undefined') {
         ready(ret);
       }
     }
