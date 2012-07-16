@@ -28,14 +28,15 @@ sync-develop: pull-develop submodule-sync
 sync-master: pull-master submodule-sync
 
 .PHONY: out
-out: submodule-sync
+out: 
 	@echo "Creating output dir..."; \
 	rm -rf $(GAIA_PATH)/profile; \
 	if [ ! -d $(OUT_DIR) ]; \
 	then \
 		mkdir $(OUT_DIR); \
 	fi; \
-	cp -r gaia/* $(OUT_DIR)/;
+	cp -r gaia/* $(OUT_DIR)/; \
+	cp -r ./.git/* $(OUT_DIR)/.git/;
 
 .PHONY: owd-apps
 owd-apps: out
