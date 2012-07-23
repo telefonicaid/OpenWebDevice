@@ -56,4 +56,5 @@ owd-apps: out
 	done
 
 install-owd: owd-apps
+	$(MAKE) -C $(OUT_DIR) stamp-commit-hash
 	$(MAKE) -C $(OUT_DIR) install-gaia
