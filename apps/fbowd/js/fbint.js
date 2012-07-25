@@ -68,10 +68,6 @@ if (typeof window.owdFbInt === 'undefined') {
       var selButton = document.querySelector('#selunsel');
       var contactList = document.querySelector('#groups-list');
 
-      // Canvas used to obtain the idata url images
-      var canvas = document.createElement('canvas');
-      canvas.hidden = true;
-
       var BLOCK_SIZE = 5;
       var nextBlock = BLOCK_SIZE + 3;
 
@@ -81,8 +77,8 @@ if (typeof window.owdFbInt === 'undefined') {
      *  Initialization function it tries to find an access token
      *
      */
-    owdFbInt.init = function() {
-      var queryString = document.location.hash.substring(1);
+    owdFbInt.afterRedirect = function(state) {
+      var queryString = state;
 
       window.console.log('document.location.search: ', queryString);
 
@@ -104,6 +100,7 @@ if (typeof window.owdFbInt === 'undefined') {
         }
         else if (queryString.indexOf('logout') !== -1) {
           window.console.log('Logged out');
+          clearStorage();
           document.querySelector('#msg').textContent = 'Logged Out!';
           document.querySelector('#msg').style.display = 'block';
           window.setTimeout(
@@ -258,9 +255,8 @@ if (typeof window.owdFbInt === 'undefined') {
       }
     }
 
-
     UI.logout = function() {
-      getAccessToken(function(token) { logout(token); },'');
+      getAccessToken(function(token) { owdFbAuth.logout(token); },'');
     };
 
     UI.sendWallMsg = function(e) {
@@ -447,28 +443,13 @@ if (typeof window.owdFbInt === 'undefined') {
     }
 
     /**
-     *  Performs Facebook logout
-     *
-     *
-     */
-    function logout(accessToken) {
-      window.console.log('Logout');
-      clearStorage();
-
-      document.location =
-              'https://www.facebook.com/logout.php?next=' +
-                  encodeURIComponent(getLocation() + '#state=logout') +
-                  '&access_token=' + accessToken;
-    }
-
-    /**
      *  Clears credential data stored locally
      *
      */
     function clearStorage() {
       window.localStorage.removeItem('access_token');
       window.localStorage.removeItem('expires');
-      window.localStorage.removeItem('ts_expires');
+      window.localStorage.removeItem('token_ts');
     }
 
     /**
@@ -830,46 +811,13 @@ if (typeof window.owdFbInt === 'undefined') {
       var ret;
 
       if (!window.localStorage.access_token) {
-
-        window.console.log('No access token stored!!!');
-
-        var hash = window.location.hash.substring(1);
-
-        if (hash.length > 0) {
-          var atidx = hash.indexOf(ACC_T);
-          if (atidx !== -1) {
-
-            var elements = hash.split('&');
-
-            window.console.log(elements);
-
-            var parameters = {};
-
-            elements.forEach(function(p) {
-              var values = p.split('=');
-
-              parameters[values[0]] = values[1];
-            });
-
-            window.console.log('Hash Parameters', parameters);
-
-            var end = parameters.expires_in;
-            ret = parameters.access_token;
-
-            window.localStorage.access_token = ret;
-            window.localStorage.expires = end * 1000;
-            window.localStorage.token_ts = Date.now();
-
-            window.console.log('Access Token: %s. Expires: %s', ret, end);
-          }
-        } else {
           startOAuth(state);
-        }
       }
       else {
         var timeEllapsed = Date.now() - window.localStorage.token_ts;
+        var expires = Number(window.localStorage.expires);
 
-        if (timeEllapsed < window.localStorage.expires) {
+        if (timeEllapsed < expires || expires === 0) {
            ret = window.localStorage.access_token;
            window.console.log('Reusing existing access token:', ret);
         }
@@ -884,6 +832,25 @@ if (typeof window.owdFbInt === 'undefined') {
       }
     }
 
+    function tokenDataReady(e) {
+      var tokenData = e.data;
+
+      window.console.log('Token Data Ready',tokenData);
+
+      var parameters = JSON.parse(tokenData);
+
+      if(parameters.access_token) {
+        var end = parameters.expires_in;
+        var ret = parameters.access_token;
+
+        window.localStorage.access_token = ret;
+        window.localStorage.expires = end * 1000;
+        window.localStorage.token_ts = Date.now();
+      }
+
+      owdFbInt.afterRedirect(parameters.state);
+    }
+
     /**
      *  Starts a OAuth 2.0 flow to obtain the user information
      *
@@ -892,11 +859,13 @@ if (typeof window.owdFbInt === 'undefined') {
       clearStorage();
 
       // This page will be in charge of handling authorization
-      document.location = 'fbint-auth.html#state=' + state;
+      owdFbAuth.start(state);
     }
 
     window.console.log('OWD FB!!!!');
-    owdFbInt.init();
+
+    window.addEventListener('message',tokenDataReady,false);
+
   }
   )(document);
 }

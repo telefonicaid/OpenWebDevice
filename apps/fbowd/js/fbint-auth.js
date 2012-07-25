@@ -38,50 +38,54 @@ if (typeof window.owdFbAuth === 'undefined') {
      *
      */
     owdFbAuth.init = function() {
-      window.console.log('The hash is: ', hash);
-      window.console.log('document.location.search: ',
-                                    document.location.search);
+      var hash = document.location.hash.substring(1);
 
-      this.start();
-    }
+      if(hash.indexOf('access_token') !== -1 || hash.indexOf('state') !== -1) {
+        window.console.log('Access Token Ready!!!');
+
+        var elements = hash.split('&');
+
+        window.console.log(elements);
+
+        var parameters = {};
+
+        elements.forEach(function(p) {
+          var values = p.split('=');
+
+          parameters[values[0]] = values[1];
+        });
+
+        window.console.log('Hash Parameters', parameters);
+
+        window.opener.postMessage(JSON.stringify(parameters),'*');
+
+        // Finally the window is closed
+        window.close();
+      }
+    } // init
 
 
-    owdFbAuth.start = function() {
-      getAccessToken();
+    owdFbAuth.start = function(state) {
+      getAccessToken(state);
     }
 
     function getLocation() {
-      return (window.location.protocol + '//' + window.location.host +
-                window.location.port + '/fbint.html');
+      return 'http://' + 'intense-tundra-4122.herokuapp.com/fbowd' +
+                              '/fbint-auth.html';
     }
 
-
-    /**
+     /**
      *  Performs Facebook logout
      *
      *
      */
-    function logout() {
+    owdFbAuth.logout = function(accessToken) {
       window.console.log('Logout');
-      clearStorage();
 
-      document.location =
-              'https://m.facebook.com/logout.php?next=' +
-                  encodeURIComponent(getLocation() + '?logout=1') +
-                  '&access_token=' + accessToken;
+      window.open('https://www.facebook.com/logout.php?next=' +
+                  encodeURIComponent(getLocation() + '#state=logout') +
+                  '&access_token=' + accessToken);
     }
-
-    /**
-     *  Clears credential data stored locally
-     *
-     */
-    function clearStorage() {
-      window.localStorage.removeItem('access_token');
-      window.localStorage.removeItem('expires');
-      window.localStorage.removeItem('ts_expires');
-    }
-
-
 
     /**
      *  Obtains the access token. The access token is retrieved from the local
@@ -89,20 +93,18 @@ if (typeof window.owdFbAuth === 'undefined') {
      *
      *
      */
-    function getAccessToken() {
-      startOAuth();
+    function getAccessToken(state) {
+      startOAuth(state);
     }
 
     /**
      *  Starts a OAuth 2.0 flow to obtain the user information
      *
      */
-    function startOAuth() {
-      clearStorage();
-
+    function startOAuth(state) {
       var queryParams = ['client_id=' + appID,
                                 'redirect_uri=' +
-                                encodeURIComponent(getLocation()),
+                        encodeURIComponent(getLocation() + '#state=' + state),
                                 'response_type=token',
                                 window.location.hash.substring(1),
                                 'scope=' +
@@ -118,12 +120,11 @@ if (typeof window.owdFbAuth === 'undefined') {
 
       window.console.log('URL: ', url);
 
-      document.location = url;
+      window.open(url);
     }
 
     window.console.log('OWD FB!!!!');
 
-    // Everything is initialized
     owdFbAuth.init();
   }
   )(document);
