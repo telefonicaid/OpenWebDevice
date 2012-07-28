@@ -24,14 +24,22 @@ if (typeof window.owdFbInt === 'undefined') {
     // Access Token parameter
     var ACC_T = 'access_token';
 
-    // Contacts selected to be sync to the address book
+    // Friends selected to be sync to the address book
     var selectedContacts = {};
+
+    // Friends that are suitable to be selected
+    var selectableFriends = {};
 
     // The whole list of friends as an array
     var myFriends, myFriendsByUid;
 
     // Partners
     var friendsPartners;
+
+    // Existing FB contacts
+    var existingFbContacts;
+
+    var contactsLoaded = false, friendsLoaded = false;
 
     // Query that retrieves the information about friends
     var FRIENDS_QUERY = [
@@ -150,6 +158,53 @@ if (typeof window.owdFbInt === 'undefined') {
     }
 
     /**
+     *  Invoked when the existing FB contacts on the Adress Book are ready
+     *
+     */
+    function contactsReady(e) {
+      window.console.log('Existing FB Contacts ready');
+
+      existingFbContacts = e.target.result;
+      contactsLoaded = true;
+
+      if(friendsLoaded) {
+        disableExisting();
+      }
+    }
+
+    /**
+     *  Invoked when friends are ready
+     *
+     */
+    function friendsReady() {
+      friendsLoaded = true;
+
+      if(contactsLoaded) {
+        disableExisting();
+      }
+    }
+
+    /**
+     *  Existing contacts are disabled
+     *
+     */
+    function disableExisting() {
+      window.console.log('Going to disable existing contacts');
+
+      existingFbContacts.forEach(function(fbContact) {
+        var uid = JSON.parse(fbContact.category[2]).uid;
+
+        delete selectableFriends[uid];
+
+        window.console.log('Existing FB Contact: ',uid);
+
+        var ele = document.querySelector('[data-uuid="' + uid + '"]');
+
+        ele.setAttribute('aria-disabled','true');
+      });
+    }
+
+    /**
      *  Gets the Facebook friends by invoking Graph API using JSONP mechanism
      *
      */
@@ -160,12 +215,6 @@ if (typeof window.owdFbInt === 'undefined') {
       var params = [ACC_T + '=' + accessToken,
                     'q' + '=' + encodeURIComponent(multiQStr),
                         'callback=owdFbInt.friendsReady'];
-/*
-      var params = [ACC_T + '=' + accessToken,
-                    'query' + '=' + encodeURIComponent(FRIENDS_QUERY),
-                    'format=JSON',
-                        'callback=owdFbInt.friendsReady'];
-*/
 
       var q = params.join('&');
 
@@ -174,6 +223,21 @@ if (typeof window.owdFbInt === 'undefined') {
       document.body.appendChild(jsonp);
 
       document.body.dataset.state = 'waiting';
+
+      // In the meantime we obtain the FB friends already on the Address Book
+      if(navigator.mozContacts) {
+        window.console.log('Going to query FB Contacts');
+
+        var filter = { filterValue: 'facebook', filterOp: 'equals',
+                          filterBy: ['category']};
+        var req = navigator.mozContacts.find(filter);
+
+        req.onsuccess = contactsReady;
+
+        req.onerror = function(e) {
+          window.console.error('Error while retrieving FB Contacts' ,
+                                    e.target.error.name); }
+      }
     }
 
     /**
@@ -211,14 +275,18 @@ if (typeof window.owdFbInt === 'undefined') {
 
 
           if (f.email) {
+            f.email1 = f.email;
             f.email = [{type: ['facebook'], address: f.email}];
           }
+          else { f.email1 = ''; }
 
           var nextidx = 0;
           if (f.cell) {
+            f.cell1 = f.cell;
             f.tel = [{type: ['facebook'], number: f.cell}];
             nextidx = 1;
           }
+          else { f.cell1 = ''; }
 
           if (f.other_phone) {
             f.tel[nextidx] = {type: ['facebook'], number: f.other_phone};
@@ -227,6 +295,7 @@ if (typeof window.owdFbInt === 'undefined') {
           f.uid = f.uid.toString();
 
           myFriendsByUid[f.uid] = f;
+          selectableFriends[f.uid] = f;
           myFriends.push(f);
 
           window.console.log('Cell: ', f.cell);
@@ -234,12 +303,14 @@ if (typeof window.owdFbInt === 'undefined') {
           window.console.log('email: ', f.email);
         });
 
+        window.console.log('Friends loaded!');
+
         // My friends partners
         friendsPartners = parseFriendsPartners(response.data[1].fql_result_set);
 
-        contacts.List.init(document.querySelector('#groups-list'));
+         window.console.log('Friends partners Ready!');
 
-        contacts.List.load(myFriends);
+        contacts.List.load(myFriends,friendsReady);
 
         // contacts.List.handleClick(this.ui.selection);
 
@@ -387,7 +458,7 @@ if (typeof window.owdFbInt === 'undefined') {
 
       bulkSelection(true);
 
-      selectedContacts = myFriendsByUid;
+      selectedContacts = selectableFriends;
 
       selButton.textContent = 'Unselect All';
       selButton.onclick = UI.unSelectAll;
@@ -431,14 +502,15 @@ if (typeof window.owdFbInt === 'undefined') {
     function bulkSelection(value) {
       window.console.log('Bulk Selection');
 
-      var list = contactList.querySelectorAll('input[type="checkbox"]');
+      var list = contactList.querySelectorAll(
+                                        'li[data-uuid][aria-disabled="false"]');
 
       var total = list.length;
 
       window.console.log('Total input: ', total);
 
       for (var c = 0; c < total; c++) {
-        list[c].checked = value;
+        list[c].querySelector('input[type="checkbox"]').checked = value;
       }
     }
 
