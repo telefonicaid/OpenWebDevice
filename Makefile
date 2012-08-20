@@ -55,5 +55,17 @@ owd-apps: out
 		fi \
 	done
 
+.PHONY: install-owd
 install-owd: owd-apps
+	$(MAKE) -C $(OUT_DIR) stamp-commit-hash
 	$(MAKE) -C $(OUT_DIR) install-gaia
+
+.PHONY: install-gaia
+install-gaia:
+	$(MAKE) -C $(OUT_DIR) stamp-commit-hash
+	$(MAKE) -C $(OUT_DIR) install-gaia
+
+.PHONY: reset-owd
+reset-owd: owd-apps
+	$(MAKE) -C $(OUT_DIR) stamp-commit-hash
+	$(MAKE) -C $(OUT_DIR) reset-gaia
