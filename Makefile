@@ -36,7 +36,7 @@ out:
 		mkdir $(OUT_DIR); \
 	fi; \
 	cp -r gaia/* $(OUT_DIR)/; \
-	cp -r ./.git/ $(OUT_DIR)/.git/;
+	cp -r gaia/.git/ $(OUT_DIR)/.git/;
 
 .PHONY: owd-apps
 owd-apps: out
