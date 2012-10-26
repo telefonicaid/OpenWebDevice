@@ -9,13 +9,13 @@
   <default remote="caf" revision="ics_chocolate_rb4.2" sync-j="4"/>
 
   <!-- Gonk specific things and forks -->
-  <project name="platform_build" path="build" remote="b2g" revision="db539a3bd139c93c09b0cd1c3f9396b74d68717c">
+  <project name="platform_build" path="build" remote="b2g" revision="273ba23d5c6c9f6a34995a3cc429804d1449ca9f">
     <copyfile dest="Makefile" src="core/root.mk"/>
   </project>
   <project name="fake-dalvik" path="dalvik" remote="b2g" revision="ca1f327d5acc198bb4be62fa51db2c039032c9ce"/>
-  <project name="gaia" path="gaia" remote="tid" revision="fcfa1857bed6596e992263206451c6814e4b2f6d"/>
-  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="8fd2bf7a189d97319ad6800cd10fc7f4bfce00d1"/>
-  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="72b308748c587808400d4dc4ae1fd6057ed35091"/>
+  <project name="gaia" path="gaia" remote="tid" revision="62e1eb4d46ec824098717addf01d9c8fe26178ca"/>
+  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="82962ca905475ac147b0e5c99eb495c01a398190"/>
+  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="1f1c633ecccec9255fc99d3f11126bac19b7dcb0"/>
   <project name="rilproxy" path="rilproxy" remote="b2g" revision="32106d4ea635ebe17a1610b643b398db639b8b97"/>
   <project name="librecovery" path="librecovery" remote="b2g" revision="1355ac6c5db1777baf6ed7a9f398ea2f30f85175"/>
   <project name="moztt" path="external/moztt" remote="b2g" revision="6ee1f8987ef36d688f97064c003ad57849dfadf2"/>
