@@ -13,11 +13,11 @@
     <copyfile dest="Makefile" src="core/root.mk"/>
   </project>
   <project name="fake-dalvik" path="dalvik" remote="b2g" revision="ca1f327d5acc198bb4be62fa51db2c039032c9ce"/>
-  <project name="gaia" path="gaia" remote="tid" revision="62e1eb4d46ec824098717addf01d9c8fe26178ca"/>
-  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="82962ca905475ac147b0e5c99eb495c01a398190"/>
-  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="1f1c633ecccec9255fc99d3f11126bac19b7dcb0"/>
+  <project name="gaia" path="gaia" remote="tid" revision="6e5b7220fb5900023a2e62b7635804f1d5e78472"/>
+  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="b1485a1b83dd6be044814204b16fc48a371e9cad"/>
+  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="5ca350e80f6b2a2a5f30e8f2f7a09abaf4c40a9a"/>
   <project name="rilproxy" path="rilproxy" remote="b2g" revision="32106d4ea635ebe17a1610b643b398db639b8b97"/>
-  <project name="librecovery" path="librecovery" remote="b2g" revision="1355ac6c5db1777baf6ed7a9f398ea2f30f85175"/>
+  <project name="librecovery" path="librecovery" remote="b2g" revision="d1990e5054e7a3eb1d436469b6fc67d61df4c385"/>
   <project name="moztt" path="external/moztt" remote="b2g" revision="6ee1f8987ef36d688f97064c003ad57849dfadf2"/>
 
   <!-- Stock Android things -->
@@ -97,7 +97,7 @@
   <project name="device/qcom/common" path="device/qcom/common" revision="b9cdab8e1e1a215a8c65b8d5816f666bec7be205"/>
   <project name="platform/vendor/qcom/msm7627a" path="device/qcom/msm7627a" revision="d920a502ba17cf4d716f8b1a615f07e796b0501a"/>
   <project name="android-device-otoro" path="device/qcom/otoro" remote="b2g" revision="285594a1e23170de6adba58c278a01e9a4d13fe1"/>
-  <project name="android-device-unagi" path="device/qcom/unagi" remote="b2g" revision="3582f3be9e2658cdc2d9073b34ba2f5032c143d3"/>
+  <project name="android-device-unagi" path="device/qcom/unagi" remote="b2g" revision="f2f7ca2da1cacc11af01dfbbc4e3b87a8561f867"/>
   <project name="codeaurora_kernel_msm" path="kernel" remote="b2g" revision="0a01247e4b0880f93424b27251cd3a1f6b19dbb2"/>
   <project name="platform/hardware/qcom/camera" path="hardware/qcom/camera" revision="1acf77a75e30f3fc8b1eed2057c97adf1cb1633f"/>
   <project name="hardware_qcom_display" path="hardware/qcom/display" remote="b2g" revision="6405d30f2fac7d8a1f2cb17b99fb7dd0a8bcfdac"/>
