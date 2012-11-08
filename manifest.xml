@@ -13,9 +13,9 @@
     <copyfile dest="Makefile" src="core/root.mk"/>
   </project>
   <project name="fake-dalvik" path="dalvik" remote="b2g" revision="ca1f327d5acc198bb4be62fa51db2c039032c9ce"/>
-  <project name="gaia" path="gaia" remote="tid" revision="ac495039efdc1423c283d0cbd05b9d9ad954aa88"/>
-  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="dba3ca425e825cbbfc67dadd25966c4e1f465fef"/>
-  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="5ca350e80f6b2a2a5f30e8f2f7a09abaf4c40a9a"/>
+  <project name="gaia" path="gaia" remote="tid" revision="2eb262f58cd00a52c718873c086828750fe2a66f"/>
+  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="f059d3668a1acdeca0fac3c489205edcbe3c8779"/>
+  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="5463ef6058a4aad360f60953231111b89abf8615"/>
   <project name="rilproxy" path="rilproxy" remote="b2g" revision="32106d4ea635ebe17a1610b643b398db639b8b97"/>
   <project name="librecovery" path="librecovery" remote="b2g" revision="d1990e5054e7a3eb1d436469b6fc67d61df4c385"/>
   <project name="moztt" path="external/moztt" remote="b2g" revision="6ee1f8987ef36d688f97064c003ad57849dfadf2"/>
