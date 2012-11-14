@@ -14,10 +14,10 @@
   </project>
   <project name="fake-dalvik" path="dalvik" remote="b2g" revision="ca1f327d5acc198bb4be62fa51db2c039032c9ce"/>
   <project name="gaia" path="gaia" remote="tid" revision="92b7a950de3ec1cdecd90fb9d2cd7f930bb1f227"/>
-  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="d763189fd92dc518930e0d779b1da86d5f240f65"/>
-  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="bd86cbf26e138eb9b8b9bfd2a6d1bbfc94864753"/>
+  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="18971a6b7245e23eb01ffb92d2593978d6373771"/>
+  <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="7c0a6ad7303d3ebc270e29a8b410554d6c632dfb"/>
   <project name="rilproxy" path="rilproxy" remote="b2g" revision="32106d4ea635ebe17a1610b643b398db639b8b97"/>
-  <project name="librecovery" path="librecovery" remote="b2g" revision="d1990e5054e7a3eb1d436469b6fc67d61df4c385"/>
+  <project name="librecovery" path="librecovery" remote="b2g" revision="b7911c064a71a5c18e2c92f869f6364a798b46cd"/>
   <project name="moztt" path="external/moztt" remote="b2g" revision="6ee1f8987ef36d688f97064c003ad57849dfadf2"/>
 
   <!-- Stock Android things -->
@@ -42,7 +42,7 @@
   <project name="platform/external/flac" path="external/flac" revision="5893fbe890f5dab8e4146d2baa4bd2691c0739e0"/>
   <project name="platform/external/freetype" path="external/freetype" revision="aeb407daf3711a10a27f3bc2223c5eb05158076e"/>
   <project name="platform/external/giflib" path="external/giflib" revision="b2597268aef084202a8c349d1cc072c03c6e22eb"/>
-  <project name="platform/external/gtest" path="external/gtest" remote="linaro" revision="85030ffa1dd68c0cc05e9115430f28627996e019"/>
+  <project name="platform/external/gtest" path="external/gtest" remote="linaro" revision="344e5f3db17615cc853073a02968a603efd39109"/>
   <project name="platform/external/harfbuzz" path="external/harfbuzz" revision="116610d63a859521dacf00fb6818ee9ab2e666f6"/>
   <project name="platform/external/icu4c" path="external/icu4c" revision="0fa67b93b831c6636ca18b152a1b1b14cc99b034"/>
   <project name="platform/external/iptables" path="external/iptables" revision="3b2deb17f065c5664bb25e1a28489e5792eb63ff"/>
