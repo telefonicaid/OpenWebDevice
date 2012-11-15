@@ -13,8 +13,8 @@
     <copyfile dest="Makefile" src="core/root.mk"/>
   </project>
   <project name="fake-dalvik" path="dalvik" remote="b2g" revision="ca1f327d5acc198bb4be62fa51db2c039032c9ce"/>
-  <project name="gaia" path="gaia" remote="tid" revision="92b7a950de3ec1cdecd90fb9d2cd7f930bb1f227"/>
-  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="18971a6b7245e23eb01ffb92d2593978d6373771"/>
+  <project name="gaia" path="gaia" remote="tid" revision="1c884f41292650615b04ca9f40cab981ea9e4d00"/>
+  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="d5f22c30193affbf8784686a136d083430976396"/>
   <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="7c0a6ad7303d3ebc270e29a8b410554d6c632dfb"/>
   <project name="rilproxy" path="rilproxy" remote="b2g" revision="32106d4ea635ebe17a1610b643b398db639b8b97"/>
   <project name="librecovery" path="librecovery" remote="b2g" revision="b7911c064a71a5c18e2c92f869f6364a798b46cd"/>
