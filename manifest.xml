@@ -13,8 +13,8 @@
     <copyfile dest="Makefile" src="core/root.mk"/>
   </project>
   <project name="fake-dalvik" path="dalvik" remote="b2g" revision="ca1f327d5acc198bb4be62fa51db2c039032c9ce"/>
-  <project name="gaia" path="gaia" remote="tid" revision="1c884f41292650615b04ca9f40cab981ea9e4d00"/>
-  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="d5f22c30193affbf8784686a136d083430976396"/>
+  <project name="gaia" path="gaia" remote="tid" revision="41b694e189e806b6654d813722dd6d8b2e8d8d4e"/>
+  <project name="releases-mozilla-aurora" path="gecko" remote="mozilla" revision="4ed8fe41faa2f100a23b404bd70a3e411f216eb4"/>
   <project name="gonk-misc" path="gonk-misc" remote="b2g" revision="7c0a6ad7303d3ebc270e29a8b410554d6c632dfb"/>
   <project name="rilproxy" path="rilproxy" remote="b2g" revision="32106d4ea635ebe17a1610b643b398db639b8b97"/>
   <project name="librecovery" path="librecovery" remote="b2g" revision="b7911c064a71a5c18e2c92f869f6364a798b46cd"/>
@@ -97,7 +97,7 @@
   <project name="device/qcom/common" path="device/qcom/common" revision="b9cdab8e1e1a215a8c65b8d5816f666bec7be205"/>
   <project name="platform/vendor/qcom/msm7627a" path="device/qcom/msm7627a" revision="d920a502ba17cf4d716f8b1a615f07e796b0501a"/>
   <project name="android-device-otoro" path="device/qcom/otoro" remote="b2g" revision="ad559059650d98bb7049720086401fc7ed4d24fb"/>
-  <project name="android-device-unagi" path="device/qcom/unagi" remote="b2g" revision="18dac2783677d2f31e1a299e92edb250b8876750"/>
+  <project name="android-device-unagi" path="device/qcom/unagi" remote="b2g" revision="c83d823b231b6ad8f48ba486375a0c951a4f42fb"/>
   <project name="codeaurora_kernel_msm" path="kernel" remote="b2g" revision="0a01247e4b0880f93424b27251cd3a1f6b19dbb2"/>
   <project name="platform/hardware/qcom/camera" path="hardware/qcom/camera" revision="1acf77a75e30f3fc8b1eed2057c97adf1cb1633f"/>
   <project name="hardware_qcom_display" path="hardware/qcom/display" remote="b2g" revision="6405d30f2fac7d8a1f2cb17b99fb7dd0a8bcfdac"/>
