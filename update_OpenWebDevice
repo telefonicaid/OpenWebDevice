@@ -1,0 +1,91 @@
+#OpenWebDevice/apps/facebook/js
+// update
+var accessToken = 'tu_access_token';
+
+function userDataReady(userData) {
+  console.log('UserData:', userData);
+  var ele = document.querySelector("p strong");
+  ele.textContent = userData.name;
+}
+
+function friendsReady(friendsData) {
+  console.log('Friends:', friendsData);
+
+  var myFriends = friendsData.data;
+  var list = document.querySelector('ul');
+  var list2 = document.querySelector('ol');
+  list.hidden = false;
+  list2.hidden = true;
+
+  var friendsHTML = '';
+  myFriends.forEach(function (friend) {
+    friendsHTML += '<li><img src="https://graph.facebook.com/' + friend.id + '/picture?access_token=' + accessToken + '"><a href="#" data-friend-id="' + friend.id + '">' + friend.name + '</a></li>';
+  });
+
+  list.innerHTML = friendsHTML;
+}
+
+function newsReady(newsData) {
+  var myNews = newsData.data;
+  var list = document.querySelector('ol');
+  var list2 = document.querySelector('ul');
+  list.hidden = false;
+  list2.hidden = true;
+
+  var newsHTML = '';
+  myNews.forEach(function (news) {
+    var msg = news.story || news.message || '';
+    if (msg) {
+      newsHTML += '<li style="width: 100%; margin: 4px 0; float: left"><dl><dt><img style="float: left" src="https://graph.facebook.com/' + news.from.id + '/picture?access_token=' + accessToken + '"><b>' + news.from.name + '</b></dt><dd>' + msg + '</dd></dl></li>';
+    }
+  });
+
+  list.innerHTML = newsHTML;
+
+  if (document.location.toString().indexOf('preview=1') !== -1) {
+    document.body.dataset.state = 'preview';
+    document.documentElement.dataset.state = 'preview';
+  }
+}
+
+function getFriends() {
+  var friendsService = new URL('https://graph.facebook.com/me/friends');
+  friendsService.searchParams.append('access_token', accessToken);
+  friendsService.searchParams.append('callback', 'friendsReady');
+
+  var jsonp = document.createElement('script');
+  jsonp.src = friendsService.toString();
+  document.body.appendChild(jsonp);
+}
+
+function getNews() {
+  var newsService = new URL('https://graph.facebook.com/me/home');
+  var now = Date.now();
+  var since = now - 2 * 60 * 60 * 1000;
+  newsService.searchParams.append('access_token', accessToken);
+  newsService.searchParams.append('callback', 'newsReady');
+  newsService.searchParams.append('limit', 6);
+
+  var jsonp = document.createElement('script');
+  jsonp.src = newsService.toString();
+  document.body.appendChild(jsonp);
+}
+
+function logout() {
+  console.log('Logout');
+  document.location = 'https://m.facebook.com/logout.php?next=' + encodeURIComponent(window.location + "?logout=1") + '&access_token=' + accessToken;
+  localStorage.removeItem('access_token');
+}
+
+// Asignar eventos de forma programática en lugar de eventos en línea.
+document.querySelector('ul').addEventListener('click', function (event) {
+  if (event.target.tagName === 'A') {
+    var friendId = event.target.getAttribute('data-friend-id');
+    // Realizar acciones con el amigo seleccionado.
+  }
+});
+
+// Llama a getFriends y getNews al cargar la página si es necesario.
+getFriends();
+getNews();
+
